@@ -1,0 +1,27 @@
+# RAG 시스템 의존성 (이 파일은 backend/ 루트에 위치)
+# 설치: pip install -r requirements.txt
+
+# === 핵심 라이브러리 ===
+chromadb==0.5.23           # 벡터 DB
+sentence-transformers==3.3.1  # bge-m3 임베딩 모델 실행
+torch>=2.0.0                # sentence-transformers 의존성
+
+# === 백엔드 서버 (다음 단계에서 사용) ===
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+python-multipart==0.0.17    # 파일 업로드 처리
+
+# === LLM 호출 (다음 단계에서 사용) ===
+openai>=1.50.0              # GPT-4o-mini 호출용
+anthropic>=0.40.0           # Claude Haiku 호출용 (옵션)
+
+# === 환경변수 관리 ===
+python-dotenv==1.0.1
+
+# === 유틸 ===
+pydantic>=2.0.0
+
+google-genai>=1.0.0
+python-dotenv>=1.0.0
+Pillow>=10.0.0
+

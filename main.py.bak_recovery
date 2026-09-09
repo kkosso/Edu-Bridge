@@ -1,0 +1,1687 @@
+"""
+backend/main.py
+====================
+EDU-bridge FastAPI 백엔드 (v3 - auth + lesson saving)
+
+API:
+    POST /api/extract             이미지+텍스트 → 키워드 추출
+    POST /api/cards               search_query (+offset) → 카드 3장
+    POST /api/lesson              선택된 카드 → 지도안 (Markdown)
+
+    POST /api/signup              회원가입
+    POST /api/login               로그인
+    GET  /api/me                  현재 사용자 정보
+
+    POST /api/lessons/save        지도안 저장
+    GET  /api/lessons/my          내 지도안 목록
+    PATCH /api/lessons/{id}/favorite  즐겨찾기 토글
+    DELETE /api/lessons/{id}      지도안 삭제
+    GET  /api/lessons/{id}        지도안 상세 조회
+"""
+
+import sys
+import json
+import tempfile
+from pathlib import Path
+from datetime import datetime
+from typing import Optional, List
+
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, EmailStr
+from sqlalchemy.orm import Session
+
+BACKEND_ROOT = Path(__file__).parent
+sys.path.insert(0, str(BACKEND_ROOT))
+STATIC_DIR = BACKEND_ROOT / "static"
+
+from services.keyword_extractor import extract_keywords
+from services.retriever import Retriever
+from services.card_generator import generate_cards, load_countries_metadata
+from services.lesson_planner import generate_lesson_plan
+
+# 인증 시스템
+from database import (
+    init_db, get_db,
+    create_user, get_user_by_email, get_user_by_username, authenticate_user,
+    User, SavedLesson, UserTemplate, AppliedTemplate,
+    CommunityPost, CommunityComment, CommunityLike, Notice,
+)
+from auth import create_access_token, get_current_user, get_optional_user
+
+
+# ============================================================
+# 앱 + 캐시
+# ============================================================
+app = FastAPI(title="EDU-bridge API", version="0.3.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+class State:
+    retriever: Optional[Retriever] = None
+    metadata: Optional[dict] = None
+
+state = State()
+
+
+@app.on_event("startup")
+def warmup():
+    print("=" * 60)
+    print("⚙️  EDU-bridge 백엔드 워밍업 중...")
+    init_db()
+    state.retriever = Retriever()
+    state.metadata = load_countries_metadata(BACKEND_ROOT / "data" / "all_countries.json")
+    print("✅ 백엔드 준비 완료. 서버 가동.")
+    print("=" * 60)
+
+
+# ============================================================
+# 스키마
+# ============================================================
+
+# --- 인증 ---
+class SignupRequest(BaseModel):
+    email: EmailStr
+    username: str
+    password: str
+    full_name: Optional[str] = None
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: dict
+
+class UserResponse(BaseModel):
+    id: int
+    email: str
+    username: str
+    full_name: Optional[str]
+    created_at: str
+
+# --- 기존 ---
+class ExtractResponse(BaseModel):
+    detected_objects: List[str] = []
+    activity_type: str = ""
+    keywords: List[str] = []
+    search_query: str = ""
+    suggested_areas: List[str] = []
+
+class CardsRequest(BaseModel):
+    search_query: str
+    age: int
+    duration: int
+    offset: int = 0
+    total_pool_size: int = 10
+
+class CardsResponse(BaseModel):
+    selected_countries: List[str]
+    cards: List[dict]
+    retrieval_chunks: dict
+    offset: int
+    pool_size: int
+    has_more: bool
+
+class LessonRequest(BaseModel):
+    search_query: str
+    age: int
+    duration: int
+    selected_card: dict
+    retrieval_chunks: List[dict]
+
+class LessonResponse(BaseModel):
+    markdown: str
+    country_code: str
+
+# --- 지도안 저장 ---
+class SaveLessonRequest(BaseModel):
+    title: str
+    search_query: str
+    country_code: str
+    age: int
+    duration: int
+    card_data: Optional[dict] = None
+    lesson_markdown: str
+
+class SavedLessonResponse(BaseModel):
+    id: int
+    title: str
+    search_query: str
+    country_code: str
+    age: int
+    duration: int
+    is_favorite: bool
+    notes: Optional[str]
+    created_at: str
+    lesson_markdown: Optional[str] = None
+    card_data: Optional[dict] = None
+
+
+# ============================================================
+# 인증 API
+# ============================================================
+
+@app.post("/api/signup", response_model=TokenResponse)
+def api_signup(req: SignupRequest, db: Session = Depends(get_db)):
+    if get_user_by_email(db, req.email):
+        raise HTTPException(status_code=400, detail="이미 사용 중인 이메일입니다.")
+    if get_user_by_username(db, req.username):
+        raise HTTPException(status_code=400, detail="이미 사용 중인 사용자명입니다.")
+    if len(req.password) < 6:
+        raise HTTPException(status_code=400, detail="비밀번호는 최소 6자 이상이어야 합니다.")
+    try:
+        user = create_user(db=db, email=req.email, username=req.username,
+                           password=req.password, full_name=req.full_name)
+        access_token = create_access_token(data={"sub": str(user.id)})
+        return TokenResponse(access_token=access_token, user={
+            "id": user.id, "email": user.email,
+            "username": user.username, "full_name": user.full_name,
+            "created_at": user.created_at.isoformat()
+        })
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"회원가입 실패: {str(e)}")
+
+@app.post("/api/login", response_model=TokenResponse)
+def api_login(req: LoginRequest, db: Session = Depends(get_db)):
+    user = authenticate_user(db, req.email, req.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="이메일 또는 비밀번호가 올바르지 않습니다.")
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="비활성화된 계정입니다.")
+    access_token = create_access_token(data={"sub": str(user.id)})
+    return TokenResponse(access_token=access_token, user={
+        "id": user.id, "email": user.email,
+        "username": user.username, "full_name": user.full_name,
+        "created_at": user.created_at.isoformat()
+    })
+
+@app.get("/api/me")
+def api_get_current_user(current_user: User = Depends(get_current_user)):
+    return {
+        "id": current_user.id, "email": current_user.email,
+        "username": current_user.username, "full_name": current_user.full_name,
+        "created_at": current_user.created_at.isoformat()
+    }
+
+
+# ============================================================
+# 지도안 저장/즐겨찾기 API
+# ============================================================
+
+@app.post("/api/lessons/save")
+def api_save_lesson(req: SaveLessonRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """지도안 저장"""
+    try:
+        lesson = SavedLesson(
+            user_id=current_user.id,
+            title=req.title,
+            search_query=req.search_query,
+            country_code=req.country_code,
+            age=req.age,
+            duration=req.duration,
+            card_data=json.dumps(req.card_data, ensure_ascii=False) if req.card_data else None,
+            lesson_markdown=req.lesson_markdown,
+            is_favorite=False,
+        )
+        db.add(lesson)
+        db.commit()
+        db.refresh(lesson)
+        return {
+            "id": lesson.id,
+            "title": lesson.title,
+            "message": "지도안이 저장되었습니다."
+        }
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"저장 실패: {str(e)}")
+
+
+@app.get("/api/lessons/my")
+def api_get_my_lessons(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """내 지도안 목록 조회"""
+    lessons = (
+        db.query(SavedLesson)
+        .filter(SavedLesson.user_id == current_user.id)
+        .order_by(SavedLesson.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": l.id,
+            "title": l.title,
+            "search_query": l.search_query,
+            "country_code": l.country_code,
+            "age": l.age,
+            "duration": l.duration,
+            "is_favorite": l.is_favorite,
+            "notes": l.notes,
+            "created_at": l.created_at.isoformat(),
+            "card_data": json.loads(l.card_data) if l.card_data else None,
+        }
+        for l in lessons
+    ]
+
+
+@app.get("/api/lessons/{lesson_id}")
+def api_get_lesson_detail(lesson_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """지도안 상세 조회 (마크다운 포함)"""
+    lesson = db.query(SavedLesson).filter(
+        SavedLesson.id == lesson_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="지도안을 찾을 수 없습니다.")
+    return {
+        "id": lesson.id,
+        "title": lesson.title,
+        "search_query": lesson.search_query,
+        "country_code": lesson.country_code,
+        "age": lesson.age,
+        "duration": lesson.duration,
+        "is_favorite": lesson.is_favorite,
+        "notes": lesson.notes,
+        "lesson_markdown": lesson.lesson_markdown,
+        "card_data": json.loads(lesson.card_data) if lesson.card_data else None,
+        "created_at": lesson.created_at.isoformat(),
+    }
+
+
+@app.patch("/api/lessons/{lesson_id}/favorite")
+def api_toggle_favorite(lesson_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """즐겨찾기 토글"""
+    lesson = db.query(SavedLesson).filter(
+        SavedLesson.id == lesson_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="지도안을 찾을 수 없습니다.")
+    lesson.is_favorite = not lesson.is_favorite
+    db.commit()
+    return {"id": lesson.id, "is_favorite": lesson.is_favorite}
+
+
+@app.delete("/api/lessons/{lesson_id}")
+def api_delete_lesson(lesson_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """지도안 삭제"""
+    lesson = db.query(SavedLesson).filter(
+        SavedLesson.id == lesson_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="지도안을 찾을 수 없습니다.")
+    db.delete(lesson)
+    db.commit()
+    return {"message": "삭제되었습니다."}
+
+
+@app.patch("/api/lessons/{lesson_id}/notes")
+def api_update_notes(lesson_id: int, body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """메모 추가/수정"""
+    lesson = db.query(SavedLesson).filter(
+        SavedLesson.id == lesson_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="지도안을 찾을 수 없습니다.")
+    lesson.notes = body.get("notes", "")
+    db.commit()
+    return {"id": lesson.id, "notes": lesson.notes}
+
+
+# ============================================================
+# 기존 API (extract, cards, lesson)
+# ============================================================
+
+@app.post("/api/extract", response_model=ExtractResponse)
+async def api_extract(
+    text: str = Form(""),
+    age: int = Form(4),
+    duration: int = Form(40),
+    image: Optional[UploadFile] = File(None),
+):
+    if not text.strip() and image is None:
+        raise HTTPException(status_code=400, detail="텍스트 또는 이미지 중 하나는 필요합니다.")
+    image_path = None
+    tmp_file = None
+    try:
+        if image is not None:
+            suffix = Path(image.filename or "img.png").suffix
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+            content = await image.read()
+            tmp_file.write(content)
+            tmp_file.close()
+            image_path = tmp_file.name
+        result = extract_keywords(text=text or "유아 교육 활동", age=age, duration=duration, image_path=image_path)
+        return ExtractResponse(**result)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+    finally:
+        if tmp_file:
+            Path(tmp_file.name).unlink(missing_ok=True)
+
+
+@app.post("/api/cards", response_model=CardsResponse)
+async def api_cards(req: CardsRequest):
+    if state.retriever is None or state.metadata is None:
+        raise HTTPException(status_code=503, detail="서버 워밍업 미완료. 잠시 후 재시도.")
+    try:
+        pool_size = max(req.total_pool_size, req.offset + 3)
+        retrieval = state.retriever.search(req.search_query, top_k_countries=pool_size)
+        all_top = retrieval["top_countries"]
+        actual_pool = len(all_top)
+        if actual_pool == 0:
+            raise HTTPException(status_code=500, detail="추천된 국가가 없습니다.")
+        effective_offset = req.offset % max(actual_pool, 1)
+        end = effective_offset + 3
+        if end <= actual_pool:
+            sliced = all_top[effective_offset:end]
+        else:
+            sliced = all_top[effective_offset:] + all_top[: end - actual_pool]
+        cards_result = generate_cards(
+            user_query=req.search_query, age=req.age, duration=req.duration,
+            top_countries=sliced, countries_metadata=state.metadata,
+        )
+        retrieval_chunks = {c["country_code"]: c["matched_chunks"] for c in sliced}
+        return CardsResponse(
+            selected_countries=cards_result.get("selected_countries", []),
+            cards=cards_result.get("cards", []),
+            retrieval_chunks=retrieval_chunks,
+            offset=effective_offset, pool_size=actual_pool,
+            has_more=actual_pool > 3,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+
+
+@app.post("/api/lesson", response_model=LessonResponse)
+async def api_lesson(req: LessonRequest):
+    if state.metadata is None:
+        raise HTTPException(status_code=503, detail="서버 워밍업 미완료.")
+    selected_code = req.selected_card.get("country_code")
+    if not selected_code or selected_code not in state.metadata:
+        raise HTTPException(status_code=400, detail=f"올바르지 않은 country_code: {selected_code}")
+    try:
+        md = generate_lesson_plan(
+            user_query=req.search_query, age=req.age, duration=req.duration,
+            selected_country_code=selected_code, selected_card=req.selected_card,
+            country_chunks=req.retrieval_chunks, country_metadata=state.metadata[selected_code],
+        )
+        return LessonResponse(markdown=md, country_code=selected_code)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"{type(e).__name__}: {e}")
+
+
+
+# ============================================================
+# 학부모 알림장 API
+# ============================================================
+
+@app.post("/api/kidsnote/generate")
+async def api_kidsnote_generate(
+    activity_text: str = Form(...),
+    tone: str = Form("🤗 다정하게"),
+    image: Optional[UploadFile] = File(None),
+):
+    """
+    학부모 알림장 자동 생성
+
+    입력: 활동 내용 텍스트 + 톤 선택 + 활동 사진(선택)
+    출력: 학부모용 알림장 200~300자
+    """
+    from services.keyword_extractor import _get_client
+    import google.genai.types as genai_types
+
+    # 톤 매핑
+    tone_map = {
+        "🤗 다정하게": "따뜻하고 다정한 말투로, 부모가 읽으면 미소 짓게 되는",
+        "📚 전문적으로": "교육적 전문성이 느껴지는 신뢰감 있는 말투로",
+        "😊 밝고 활기차게": "밝고 생동감 넘치는 말투로, 이모지를 적절히 활용하여",
+        "🌿 자연스럽게": "편안하고 자연스러운 일상적인 말투로",
+    }
+    tone_desc = tone_map.get(tone, tone_map["🤗 다정하게"])
+
+    prompt = f"""당신은 유치원 담임 교사입니다. 오늘 하루 있었던 활동 내용을 바탕으로 학부모에게 보낼 알림장을 작성해주세요.
+
+활동 내용: {activity_text}
+말투: {tone_desc} 말투
+
+다음 조건을 반드시 지켜주세요:
+- 200~300자 이내
+- 학부모 입장에서 아이의 하루를 생생하게 느낄 수 있도록
+- 내일에 대한 기대감이나 따뜻한 마무리 문장 포함
+- 서두에 "안녕하세요" 같은 인사말 생략, 바로 활동 내용부터 시작
+- 오직 알림장 본문만 출력 (제목, 설명 없이)"""
+
+    image_path = None
+    tmp_file = None
+
+    try:
+        # 이미지가 있으면 멀티모달로 분석
+        if image is not None:
+            suffix = Path(image.filename or "img.jpg").suffix
+            tmp_file = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+            content = await image.read()
+            tmp_file.write(content)
+            tmp_file.close()
+            image_path = tmp_file.name
+
+            # 이미지 분석 추가 프롬프트
+            prompt = f"""당신은 유치원 담임 교사입니다. 첨부된 아이 활동 사진과 활동 내용을 바탕으로 학부모에게 보낼 알림장을 작성해주세요.
+
+활동 내용: {activity_text}
+말투: {tone_desc} 말투
+
+사진 속 아이의 모습과 활동을 자연스럽게 녹여서 작성해주세요.
+
+다음 조건을 반드시 지켜주세요:
+- 200~300자 이내
+- 학부모 입장에서 아이의 하루를 생생하게 느낄 수 있도록
+- 내일에 대한 기대감이나 따뜻한 마무리 문장 포함
+- 서두 인사말 생략, 바로 활동 내용부터 시작
+- 오직 알림장 본문만 출력"""
+
+        client = _get_client()
+
+        if image_path:
+            import PIL.Image
+            img = PIL.Image.open(image_path)
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=[prompt, img],
+                config=genai_types.GenerateContentConfig(
+                    max_output_tokens=2048,
+                    temperature=0.8,
+                    thinking_config=genai_types.ThinkingConfig(thinking_budget=0),
+                )
+            )
+        else:
+            response = client.models.generate_content(
+                model="gemini-2.5-flash",
+                contents=prompt,
+                config=genai_types.GenerateContentConfig(
+                    max_output_tokens=2048,
+                    temperature=0.8,
+                    thinking_config=genai_types.ThinkingConfig(thinking_budget=0),
+                )
+            )
+
+        note_text = response.text.strip()
+
+        return {"note": note_text, "char_count": len(note_text)}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"알림장 생성 실패: {str(e)}")
+    finally:
+        if tmp_file:
+            Path(tmp_file.name).unlink(missing_ok=True)
+
+
+
+# ============================================================
+# 커스텀 템플릿 API
+# ============================================================
+import shutil
+import uuid
+
+TEMPLATES_DIR = BACKEND_ROOT / "user_templates"
+TEMPLATES_DIR.mkdir(exist_ok=True)
+
+
+@app.post("/api/templates/upload")
+async def api_upload_template(
+    file: UploadFile = File(...),
+    template_name: str = Form(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """지도안 양식(.docx) 업로드 및 자동 파싱"""
+    fname_lower = file.filename.lower()
+    if not (fname_lower.endswith(".docx") or fname_lower.endswith(".hwp")):
+        raise HTTPException(status_code=400, detail=".docx 또는 .hwp 파일만 지원합니다.")
+    is_hwp = fname_lower.endswith(".hwp")
+
+    try:
+        # 파일 저장
+        ext = Path(file.filename).suffix
+        saved_name = f"{current_user.id}_{uuid.uuid4().hex}{ext}"
+        saved_path = TEMPLATES_DIR / saved_name
+        with open(saved_path, "wb") as f:
+            content = await file.read()
+            f.write(content)
+
+        # 파싱 (.docx 또는 .hwp)
+        if is_hwp:
+            from services.template_parser import parse_hwp_template
+            parsed = parse_hwp_template(str(saved_path))
+        else:
+            from services.template_parser import parse_docx_template
+            parsed = parse_docx_template(str(saved_path))
+
+        if "error" in parsed:
+            saved_path.unlink(missing_ok=True)
+            raise HTTPException(status_code=400, detail=parsed["error"])
+
+        # 심층 분석 (Gemini로 셀별 의미 파악, .docx만)
+        analysis_data = None
+        if not is_hwp:
+            try:
+                from services.template_analyzer import analyze_template_deeply
+                analysis_data = analyze_template_deeply(str(saved_path))
+                print(f"🔍 양식 심층 분석 완료: {len(analysis_data.get('cells', []))}개 셀")
+            except Exception as e:
+                print(f"⚠️ 심층 분석 실패 (계속 진행): {e}")
+
+        # DB 저장
+        tpl = UserTemplate(
+            user_id=current_user.id,
+            template_name=template_name,
+            original_filename=file.filename,
+            file_path=str(saved_path),
+            sections_json=json.dumps(parsed["sections"], ensure_ascii=False),
+            structure_type=parsed["structure_type"],
+            analysis_json=json.dumps(analysis_data, ensure_ascii=False) if analysis_data else None,
+        )
+        db.add(tpl)
+        db.commit()
+        db.refresh(tpl)
+
+        return {
+            "id": tpl.id,
+            "template_name": tpl.template_name,
+            "sections": parsed["sections"],
+            "structure_type": parsed["structure_type"],
+            "total_sections": parsed["total_sections"],
+            "warning": parsed.get("warning"),
+            "is_hwp": is_hwp,
+            "message": "양식이 업로드되었습니다.",
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"업로드 실패: {str(e)}")
+
+
+@app.get("/api/templates/my")
+def api_get_my_templates(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """내 양식 목록"""
+    templates = (
+        db.query(UserTemplate)
+        .filter(UserTemplate.user_id == current_user.id)
+        .order_by(UserTemplate.created_at.desc())
+        .all()
+    )
+    return [
+        {
+            "id": t.id,
+            "template_name": t.template_name,
+            "original_filename": t.original_filename,
+            "structure_type": t.structure_type,
+            "sections": json.loads(t.sections_json) if t.sections_json else [],
+            "created_at": t.created_at.isoformat(),
+        }
+        for t in templates
+    ]
+
+
+@app.delete("/api/templates/{template_id}")
+def api_delete_template(
+    template_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """양식 삭제"""
+    tpl = db.query(UserTemplate).filter(
+        UserTemplate.id == template_id,
+        UserTemplate.user_id == current_user.id
+    ).first()
+    if not tpl:
+        raise HTTPException(status_code=404, detail="양식을 찾을 수 없습니다.")
+    # 파일 삭제
+    Path(tpl.file_path).unlink(missing_ok=True)
+    db.delete(tpl)
+    db.commit()
+    return {"message": "삭제되었습니다."}
+
+
+@app.post("/api/lesson/export-docx")
+async def api_export_lesson_docx(body: dict):
+    """
+    지도안을 .docx 파일로 다운로드 (양식이 있으면 Gemini로 지능적 매핑)
+    
+    body: {
+        "markdown": "...",
+        "title": "...",
+        "template_id": null (또는 양식 ID),
+        "age": 4 (선택, Gemini 매핑 보조용),
+        "duration": 40 (선택),
+        "search_query": "..." (선택)
+    }
+    """
+    from services.docx_writer import markdown_to_docx
+    
+    markdown = body.get("markdown", "")
+    title = body.get("title", "지도안")
+    template_id = body.get("template_id")
+    
+    output_path = TEMPLATES_DIR / f"output_{uuid.uuid4().hex}.docx"
+    template_path = None
+    sections_data = None
+    
+    if template_id:
+        from database import SessionLocal
+        db = SessionLocal()
+        try:
+            tpl = db.query(UserTemplate).filter(UserTemplate.id == template_id).first()
+            if tpl:
+                template_path = tpl.file_path
+                # 양식의 섹션 목록 가져오기
+                tpl_sections = json.loads(tpl.sections_json) if tpl.sections_json else []
+                
+                # Gemini로 지능적 매핑
+                # 양식의 심층 분석 결과가 있으면 위치 기반 채우기
+                template_analysis = None
+                if tpl.analysis_json:
+                    try:
+                        template_analysis = json.loads(tpl.analysis_json)
+                    except Exception as e:
+                        print(f"⚠️ 분석 JSON 파싱 실패: {e}")
+
+                lesson_meta = {
+                    "age": body.get("age"),
+                    "duration": body.get("duration"),
+                    "search_query": body.get("search_query"),
+                }
+                lesson_meta = {k: v for k, v in lesson_meta.items() if v is not None}
+                personal_info = body.get("personal_info") or {}
+
+                if template_analysis and template_analysis.get("cells"):
+                    # 위치 기반 채우기 사용
+                    from services.docx_writer import markdown_to_docx_with_analysis
+                    try:
+                        markdown_to_docx_with_analysis(
+                            markdown=markdown,
+                            output_path=str(output_path),
+                            title=title,
+                            template_path=template_path,
+                            template_analysis=template_analysis,
+                            lesson_meta=lesson_meta,
+                            personal_info=personal_info,
+                        )
+                        filename_for_download = f"{title}.docx".replace("/", "_").replace(" ", "_")
+                        return FileResponse(
+                            path=str(output_path),
+                            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                            filename=filename_for_download,
+                        )
+                    except Exception as e:
+                        print(f"⚠️ 위치 기반 채우기 실패, 기존 방식으로 폴백: {e}")
+
+                # 폴백: 기존 이름 기반 매핑
+                if tpl_sections:
+                    try:
+                        from services.template_filler import smart_fill_with_gemini
+                        sections_data = smart_fill_with_gemini(
+                            lesson_markdown=markdown,
+                            template_sections=tpl_sections,
+                            lesson_meta=lesson_meta,
+                        )
+                        print(f"✅ Gemini 매핑 완료: {len(sections_data)}개 섹션")
+                    except Exception as e:
+                        print(f"⚠️ Gemini 매핑 실패, 기본 채우기로 폴백: {e}")
+                        sections_data = body.get("sections_data")
+
+                    if personal_info and isinstance(sections_data, dict):
+                        for label, value in personal_info.items():
+                            if value and value.strip():
+                                sections_data[label] = value.strip()
+                        print(f"✅ 개인정보 {len(personal_info)}개 적용")
+        finally:
+            db.close()
+    
+    try:
+        markdown_to_docx(
+            markdown=markdown,
+            output_path=str(output_path),
+            title=title,
+            template_path=template_path,
+            sections_data=sections_data,
+        )
+        filename_for_download = f"{title}.docx".replace("/", "_").replace(" ", "_")
+        return FileResponse(
+            path=str(output_path),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename=filename_for_download,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"docx 생성 실패: {str(e)}")
+
+
+@app.post("/api/lesson/parse-sections")
+async def api_parse_lesson_sections(body: dict):
+    """
+    마크다운 지도안을 섹션별로 분해 (양식 채우기용)
+    
+    body: { "markdown": "..." }
+    Returns: { "활동명": "...", "목표": "...", ... }
+    """
+    md = body.get("markdown", "")
+    sections = {}
+    
+    # 헤더(##, ###)로 섹션 분리
+    current_key = None
+    current_content = []
+    
+    for line in md.split("\n"):
+        line_stripped = line.strip()
+        # 헤더 라인 감지
+        if line_stripped.startswith("## ") or line_stripped.startswith("### "):
+            # 이전 섹션 저장
+            if current_key:
+                sections[current_key] = "\n".join(current_content).strip()
+            # 새 섹션 시작
+            current_key = line_stripped.lstrip("#").strip()
+            current_content = []
+        elif line_stripped.startswith("**") and line_stripped.endswith("**"):
+            # **굵은글씨** 도 섹션으로 인식
+            if current_key:
+                sections[current_key] = "\n".join(current_content).strip()
+            current_key = line_stripped.strip("*").strip()
+            current_content = []
+        else:
+            current_content.append(line)
+    
+    if current_key:
+        sections[current_key] = "\n".join(current_content).strip()
+    
+    return sections
+
+
+
+@app.get("/api/templates/{template_id}/preview")
+def api_preview_template(
+    template_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """양식 미리보기 (docx → HTML 변환, hwp → 텍스트)"""
+    tpl = db.query(UserTemplate).filter(
+        UserTemplate.id == template_id,
+        UserTemplate.user_id == current_user.id
+    ).first()
+    if not tpl:
+        raise HTTPException(status_code=404, detail="양식을 찾을 수 없습니다.")
+
+    file_path = Path(tpl.file_path)
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="파일이 존재하지 않습니다.")
+
+    fname = tpl.original_filename.lower()
+    
+    # .docx → HTML 변환
+    if fname.endswith(".docx"):
+        try:
+            import mammoth
+            with open(file_path, "rb") as f:
+                result = mammoth.convert_to_html(f)
+                html_content = result.value
+            return {
+                "type": "html",
+                "content": html_content,
+                "filename": tpl.original_filename,
+                "template_name": tpl.template_name,
+            }
+        except ImportError:
+            raise HTTPException(status_code=500, detail="mammoth 패키지가 설치되지 않았습니다. pip install mammoth")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"변환 실패: {str(e)}")
+    
+    # .hwp → 텍스트 추출만 (이미 파싱된 raw_text 사용)
+    elif fname.endswith(".hwp"):
+        try:
+            from services.template_parser import parse_hwp_template
+            parsed = parse_hwp_template(str(file_path))
+            if "error" in parsed:
+                return {
+                    "type": "text",
+                    "content": f"<p style='color:#888;padding:2rem;text-align:center;'>{parsed['error']}</p>",
+                    "filename": tpl.original_filename,
+                    "template_name": tpl.template_name,
+                }
+            # 섹션 목록 + 일부 텍스트 표시
+            sections = json.loads(tpl.sections_json) if tpl.sections_json else []
+            sections_html = "<h3>감지된 섹션</h3><ul>"
+            for s in sections:
+                sections_html += f"<li>{s.get('name', '')}</li>"
+            sections_html += "</ul><hr><h3>추출된 텍스트 (일부)</h3><pre style='white-space:pre-wrap;font-family:inherit;'>"
+            sections_html += parsed.get("raw_text_sample", "")
+            sections_html += "</pre>"
+            return {
+                "type": "text",
+                "content": sections_html,
+                "filename": tpl.original_filename,
+                "template_name": tpl.template_name,
+            }
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f".hwp 미리보기 실패: {str(e)}")
+    
+    raise HTTPException(status_code=400, detail="지원하지 않는 파일 형식")
+
+
+
+@app.get("/api/templates/{template_id}/personal-fields")
+def api_get_personal_fields(
+    template_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """양식의 개인 정보 필드 목록 반환 (교사 이름, 학과 등)"""
+    tpl = db.query(UserTemplate).filter(
+        UserTemplate.id == template_id,
+        UserTemplate.user_id == current_user.id
+    ).first()
+    if not tpl:
+        raise HTTPException(status_code=404, detail="양식을 찾을 수 없습니다.")
+
+    sections = json.loads(tpl.sections_json) if tpl.sections_json else []
+
+    from services.template_filler import detect_personal_fields
+    fields = detect_personal_fields(sections)
+    return {"fields": fields, "total": len(fields)}
+
+
+
+@app.post("/api/lesson/refine")
+async def api_refine_lesson(body: dict, current_user: User = Depends(get_current_user)):
+    """
+    지도안 수정 요청 (대화형) - Pro 전용
+
+    body: {
+        "lesson_markdown": "...",
+        "refinement_request": "도입 부분을 더 흥미롭게 바꿔줘",
+        "conversation_history": [
+            {"role": "user", "content": "..."},
+            {"role": "assistant", "content": "..."},
+        ]  # 선택, 이전 대화 맥락
+    }
+    """
+    from services.keyword_extractor import _get_client
+    from google.genai import types as genai_types
+
+    markdown = body.get("lesson_markdown", "")
+    request_text = body.get("refinement_request", "")
+    history = body.get("conversation_history", []) or []
+
+    if not markdown or not request_text:
+        raise HTTPException(status_code=400, detail="지도안과 수정 요청이 모두 필요합니다.")
+
+    # Pro 전용 기능
+    access = check_pro_access(current_user, feature="refine")
+    if not access["allowed"]:
+        raise HTTPException(status_code=403, detail="PRO_REQUIRED:수정 기능은 Pro 플랜에서 사용 가능합니다.")
+
+    # 대화 맥락 포함한 프롬프트
+    history_text = ""
+    if history:
+        history_text = "\n\n## 이전 대화 맥락\n"
+        for msg in history[-6:]:  # 최근 6개만
+            role = "교사" if msg.get("role") == "user" else "AI 응답"
+            history_text += f"\n[{role}]: {msg.get('content', '')[:200]}\n"
+
+    prompt = f"""당신은 유치원 교사의 지도안 작성을 돕는 AI입니다.
+교사가 기존 지도안에 대한 수정 요청을 했습니다. 요청에 따라 지도안을 수정해주세요.
+
+## 현재 지도안 (마크다운)
+{markdown}
+{history_text}
+
+## 교사의 수정 요청
+{request_text}
+
+## 작업 지침
+1. 교사의 요청을 정확히 반영하세요. (특정 부분 수정, 추가, 삭제, 톤 변경 등)
+2. 요청과 무관한 다른 부분은 그대로 유지하세요.
+3. 마크다운 형식(헤더, 리스트, 굵은글씨)을 유지하세요.
+4. 유아 발달 단계와 교육적 적절성을 고려하세요.
+5. 수정 후 전체 지도안을 마크다운 형식으로 반환하세요.
+
+## 출력 형식
+오직 수정된 지도안 마크다운만 출력하세요. 설명이나 머리말 없이 바로 지도안 시작.
+"""
+
+    try:
+        client = _get_client()
+        response = client.models.generate_content(
+            model="gemini-2.5-flash",
+            contents=prompt,
+            config=genai_types.GenerateContentConfig(
+                temperature=0.5,
+                max_output_tokens=8192,
+                thinking_config=genai_types.ThinkingConfig(thinking_budget=0),
+            ),
+        )
+
+        updated_md = response.text.strip()
+        # 마크다운 fence 제거
+        if updated_md.startswith("```"):
+            updated_md = updated_md.split("```")[1]
+            if updated_md.startswith("markdown"):
+                updated_md = updated_md[8:].strip()
+            updated_md = updated_md.rsplit("```", 1)[0].strip()
+
+        # AI 응답 메시지 (요약) 생성
+        summary = f"요청하신 대로 수정했어요. 변경된 부분을 확인해주세요!"
+
+        return {
+            "updated_markdown": updated_md,
+            "assistant_message": summary,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"수정 실패: {str(e)}")
+
+
+
+# ============================================================
+# 양식 적용 결과 미리보기 / 수정 / 스크랩 API
+# ============================================================
+
+@app.post("/api/lesson/preview-fills")
+async def api_preview_fills(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    지도안을 양식에 채울 내용 미리 계산 (다운로드 전에 미리보기)
+
+    body: {markdown, title, template_id, age, duration, search_query, personal_info}
+    """
+    template_id = body.get("template_id")
+    markdown = body.get("markdown", "")
+
+    if not template_id:
+        raise HTTPException(status_code=400, detail="template_id 필요")
+
+    tpl = db.query(UserTemplate).filter(
+        UserTemplate.id == template_id,
+        UserTemplate.user_id == current_user.id
+    ).first()
+    if not tpl:
+        raise HTTPException(status_code=404, detail="양식 없음")
+
+    if not tpl.analysis_json:
+        raise HTTPException(status_code=400, detail="이 양식은 심층 분석이 안 되어있습니다. 재업로드하세요.")
+
+    analysis = json.loads(tpl.analysis_json)
+    lesson_meta = {
+        "age": body.get("age"),
+        "duration": body.get("duration"),
+        "search_query": body.get("search_query"),
+    }
+    lesson_meta = {k: v for k, v in lesson_meta.items() if v is not None}
+    personal_info = body.get("personal_info") or {}
+
+    from services.template_analyzer import fill_cells_with_lesson
+    position_fills = fill_cells_with_lesson(
+        template_analysis=analysis,
+        lesson_markdown=markdown,
+        lesson_meta=lesson_meta,
+        personal_info=personal_info,
+    )
+
+    # 라벨 정보와 함께 리스트로 변환
+    cells = analysis.get("cells", [])
+    fills_with_labels = []
+    for (ti, ri, ci), content in position_fills.items():
+        # 해당 위치의 셀 정보 찾기
+        cell_info = None
+        for c in cells:
+            if c.get("table_idx") == ti and c.get("row") == ri and c.get("col") == ci:
+                cell_info = c
+                break
+        label = cell_info.get("for_label", "") if cell_info else ""
+        category = cell_info.get("category", "") if cell_info else ""
+        fills_with_labels.append({
+            "table_idx": ti, "row": ri, "col": ci,
+            "content": content,
+            "label": label,
+            "category": category,
+        })
+
+    # 표/위치 순으로 정렬
+    fills_with_labels.sort(key=lambda x: (x["table_idx"], x["row"], x["col"]))
+
+    return {
+        "fills": fills_with_labels,
+        "template_name": tpl.template_name,
+        "template_id": tpl.id,
+        "personal_info": personal_info,
+    }
+
+
+@app.post("/api/lesson/refine-fills")
+async def api_refine_fills(body: dict, current_user: User = Depends(get_current_user)):
+    """양식 채워진 결과를 채팅으로 수정 - Pro 전용"""
+    access = check_pro_access(current_user, feature="refine")
+    if not access["allowed"]:
+        raise HTTPException(status_code=403, detail="PRO_REQUIRED:수정 기능은 Pro 플랜에서 사용 가능합니다.")
+
+    from services.applied_template_service import refine_fills_with_chat
+
+    current_fills = body.get("current_fills", [])
+    refine_request = body.get("refine_request", "")
+    conversation_history = body.get("conversation_history", [])
+
+    if not current_fills or not refine_request:
+        raise HTTPException(status_code=400, detail="current_fills와 refine_request 필요")
+
+    result = refine_fills_with_chat(
+        current_fills=current_fills,
+        refine_request=refine_request,
+        conversation_history=conversation_history,
+    )
+    return result
+
+
+@app.post("/api/lesson/export-from-fills")
+async def api_export_from_fills(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """
+    이미 계산된 fills로 .docx 생성 (수정 후 다운로드용) - 무료 5회 제한
+    """
+    # 다운로드 횟수 체크
+    access = check_pro_access(current_user, feature="template_download")
+    if not access["allowed"]:
+        raise HTTPException(status_code=403, detail="LIMIT_EXCEEDED:이번 달 양식 적용 다운로드 5회를 모두 사용했습니다. Pro 플랜으로 무제한 이용하세요.")
+    
+    # 무료 사용자의 경우 카운트 증가 (Pro/체험중은 카운트 안 함)
+    from datetime import timedelta as _td
+    trial_active = current_user.created_at and (datetime.utcnow() < current_user.created_at + _td(days=14))
+    if current_user.subscription_tier == 'free' and not trial_active:
+        current_user.template_download_count = (current_user.template_download_count or 0) + 1
+        db.commit()
+
+    template_id = body.get("template_id")
+    title = body.get("title", "지도안")
+    fills = body.get("fills", [])
+
+    tpl = db.query(UserTemplate).filter(
+        UserTemplate.id == template_id,
+        UserTemplate.user_id == current_user.id
+    ).first()
+    if not tpl:
+        raise HTTPException(status_code=404, detail="양식 없음")
+
+    # fills 리스트 → 위치 dict로 변환
+    position_fills = {
+        (f["table_idx"], f["row"], f["col"]): f["content"]
+        for f in fills if f.get("content")
+    }
+
+    output_path = TEMPLATES_DIR / f"output_{uuid.uuid4().hex}.docx"
+
+    from services.docx_writer import fill_template_by_positions
+    try:
+        fill_template_by_positions(tpl.file_path, str(output_path), position_fills)
+        filename_for_download = f"{title}.docx".replace("/", "_").replace(" ", "_")
+        return FileResponse(
+            path=str(output_path),
+            media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+            filename=filename_for_download,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"생성 실패: {str(e)}")
+
+
+@app.post("/api/applied-templates/save")
+async def api_save_applied_template(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """양식 적용 결과를 SavedLesson에 연결해서 저장"""
+    saved_lesson_id = body.get("saved_lesson_id")
+    template_id = body.get("template_id")
+    fills = body.get("fills", [])
+    personal_info = body.get("personal_info", {})
+
+    if not saved_lesson_id or not template_id:
+        raise HTTPException(status_code=400, detail="saved_lesson_id, template_id 필요")
+
+    # SavedLesson 소유권 확인
+    lesson = db.query(SavedLesson).filter(
+        SavedLesson.id == saved_lesson_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="저장된 지도안 없음")
+
+    tpl = db.query(UserTemplate).filter(
+        UserTemplate.id == template_id,
+        UserTemplate.user_id == current_user.id
+    ).first()
+    template_name = tpl.template_name if tpl else "(삭제된 양식)"
+
+    applied = AppliedTemplate(
+        saved_lesson_id=saved_lesson_id,
+        user_template_id=template_id,
+        template_name=template_name,
+        fills_json=json.dumps(fills, ensure_ascii=False),
+        personal_info_json=json.dumps(personal_info, ensure_ascii=False) if personal_info else None,
+    )
+    db.add(applied)
+    db.commit()
+    db.refresh(applied)
+    return {"id": applied.id, "message": "양식 적용 결과가 저장되었습니다."}
+
+
+@app.get("/api/lessons/{lesson_id}/applied-templates")
+def api_get_applied_templates(lesson_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """저장된 지도안의 양식 적용 이력 조회"""
+    lesson = db.query(SavedLesson).filter(
+        SavedLesson.id == lesson_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not lesson:
+        raise HTTPException(status_code=404, detail="지도안 없음")
+
+    applied = db.query(AppliedTemplate).filter(
+        AppliedTemplate.saved_lesson_id == lesson_id
+    ).order_by(AppliedTemplate.created_at.desc()).all()
+
+    result = []
+    for a in applied:
+        fills = json.loads(a.fills_json) if a.fills_json else []
+        result.append({
+            "id": a.id,
+            "template_id": a.user_template_id,
+            "template_name": a.template_name,
+            "fills_count": len(fills),
+            "created_at": a.created_at.isoformat(),
+        })
+    return result
+
+
+@app.get("/api/applied-templates/{applied_id}")
+def api_get_applied_detail(applied_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """양식 적용 이력 상세 (수정/재다운로드용)"""
+    applied = db.query(AppliedTemplate).join(SavedLesson).filter(
+        AppliedTemplate.id == applied_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not applied:
+        raise HTTPException(status_code=404, detail="없음")
+
+    return {
+        "id": applied.id,
+        "template_id": applied.user_template_id,
+        "template_name": applied.template_name,
+        "fills": json.loads(applied.fills_json) if applied.fills_json else [],
+        "personal_info": json.loads(applied.personal_info_json) if applied.personal_info_json else {},
+        "created_at": applied.created_at.isoformat(),
+    }
+
+
+@app.put("/api/applied-templates/{applied_id}")
+def api_update_applied(applied_id: int, body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """수정된 fills로 양식 적용 이력 업데이트"""
+    applied = db.query(AppliedTemplate).join(SavedLesson).filter(
+        AppliedTemplate.id == applied_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not applied:
+        raise HTTPException(status_code=404, detail="없음")
+    fills = body.get("fills")
+    if fills is not None:
+        applied.fills_json = json.dumps(fills, ensure_ascii=False)
+        db.commit()
+    return {"message": "업데이트 완료"}
+
+
+@app.delete("/api/applied-templates/{applied_id}")
+def api_delete_applied(applied_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """양식 적용 이력 삭제"""
+    applied = db.query(AppliedTemplate).join(SavedLesson).filter(
+        AppliedTemplate.id == applied_id,
+        SavedLesson.user_id == current_user.id
+    ).first()
+    if not applied:
+        raise HTTPException(status_code=404, detail="없음")
+    db.delete(applied)
+    db.commit()
+    return {"message": "삭제됨"}
+
+
+
+@app.get("/api/applied-templates/all")
+def api_get_all_applied(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """현재 사용자의 모든 양식 적용 파일 (보관함용)"""
+    results = (
+        db.query(AppliedTemplate, SavedLesson)
+        .join(SavedLesson, AppliedTemplate.saved_lesson_id == SavedLesson.id)
+        .filter(SavedLesson.user_id == current_user.id)
+        .order_by(AppliedTemplate.created_at.desc())
+        .all()
+    )
+    output = []
+    for applied, lesson in results:
+        fills = json.loads(applied.fills_json) if applied.fills_json else []
+        output.append({
+            "id": applied.id,
+            "template_id": applied.user_template_id,
+            "template_name": applied.template_name,
+            "lesson_title": lesson.title,
+            "lesson_search_query": lesson.search_query,
+            "country_code": lesson.country_code,
+            "age": lesson.age,
+            "duration": lesson.duration,
+            "saved_lesson_id": applied.saved_lesson_id,
+            "fills_count": len(fills),
+            "created_at": applied.created_at.isoformat(),
+        })
+    return output
+
+
+
+# ============================================================
+# 커뮤니티 API
+# ============================================================
+
+@app.get("/api/community/posts")
+def api_community_list(category: Optional[str] = None, db: Session = Depends(get_db)):
+    """게시글 목록 (로그인 안 해도 조회 가능)"""
+    q = db.query(CommunityPost).order_by(CommunityPost.created_at.desc())
+    if category and category != "all":
+        q = q.filter(CommunityPost.category == category)
+    posts = q.limit(100).all()
+
+    result = []
+    for p in posts:
+        author = db.query(User).filter(User.id == p.user_id).first()
+        comment_count = db.query(CommunityComment).filter(CommunityComment.post_id == p.id).count()
+        result.append({
+            "id": p.id,
+            "user_id": p.user_id,
+            "author_name": (author.full_name or author.username) if author else "(탈퇴 사용자)",
+            "category": p.category,
+            "title": p.title,
+            "content_preview": (p.content or "")[:120],
+            "view_count": p.view_count,
+            "like_count": p.like_count,
+            "comment_count": comment_count,
+            "created_at": p.created_at.isoformat(),
+        })
+    return result
+
+
+@app.get("/api/community/posts/{post_id}")
+def api_community_detail(post_id: int, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_optional_user)):
+    """게시글 상세"""
+    post = db.query(CommunityPost).filter(CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글 없음")
+
+    # 조회수 증가
+    post.view_count = (post.view_count or 0) + 1
+    db.commit()
+
+    author = db.query(User).filter(User.id == post.user_id).first()
+    comments = db.query(CommunityComment).filter(CommunityComment.post_id == post_id).order_by(CommunityComment.created_at.asc()).all()
+    comments_data = []
+    for c in comments:
+        cmt_author = db.query(User).filter(User.id == c.user_id).first()
+        comments_data.append({
+            "id": c.id,
+            "user_id": c.user_id,
+            "author_name": (cmt_author.full_name or cmt_author.username) if cmt_author else "(탈퇴 사용자)",
+            "content": c.content,
+            "created_at": c.created_at.isoformat(),
+            "is_mine": current_user and c.user_id == current_user.id,
+        })
+
+    is_liked = False
+    if current_user:
+        is_liked = db.query(CommunityLike).filter(
+            CommunityLike.post_id == post_id,
+            CommunityLike.user_id == current_user.id
+        ).first() is not None
+
+    return {
+        "id": post.id,
+        "user_id": post.user_id,
+        "author_name": (author.full_name or author.username) if author else "(탈퇴 사용자)",
+        "category": post.category,
+        "title": post.title,
+        "content": post.content,
+        "view_count": post.view_count,
+        "like_count": post.like_count,
+        "is_liked": is_liked,
+        "is_mine": current_user and post.user_id == current_user.id,
+        "created_at": post.created_at.isoformat(),
+        "comments": comments_data,
+    }
+
+
+@app.post("/api/community/posts")
+def api_community_create(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """게시글 작성"""
+    title = (body.get("title") or "").strip()
+    content = (body.get("content") or "").strip()
+    category = body.get("category", "general")
+    if not title or not content:
+        raise HTTPException(status_code=400, detail="제목과 내용 필요")
+
+    post = CommunityPost(
+        user_id=current_user.id,
+        category=category,
+        title=title[:200],
+        content=content,
+    )
+    db.add(post)
+    db.commit()
+    db.refresh(post)
+    return {"id": post.id, "message": "작성 완료"}
+
+
+@app.delete("/api/community/posts/{post_id}")
+def api_community_delete(post_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """게시글 삭제 (작성자만)"""
+    post = db.query(CommunityPost).filter(CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글 없음")
+    if post.user_id != current_user.id and current_user.id != 1:
+        raise HTTPException(status_code=403, detail="권한 없음")
+
+    db.query(CommunityComment).filter(CommunityComment.post_id == post_id).delete()
+    db.query(CommunityLike).filter(CommunityLike.post_id == post_id).delete()
+    db.delete(post)
+    db.commit()
+    return {"message": "삭제됨"}
+
+
+@app.post("/api/community/posts/{post_id}/like")
+def api_community_like(post_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """좋아요 토글"""
+    post = db.query(CommunityPost).filter(CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글 없음")
+
+    existing = db.query(CommunityLike).filter(
+        CommunityLike.post_id == post_id,
+        CommunityLike.user_id == current_user.id
+    ).first()
+
+    if existing:
+        db.delete(existing)
+        post.like_count = max(0, (post.like_count or 0) - 1)
+        liked = False
+    else:
+        db.add(CommunityLike(post_id=post_id, user_id=current_user.id))
+        post.like_count = (post.like_count or 0) + 1
+        liked = True
+
+    db.commit()
+    return {"is_liked": liked, "like_count": post.like_count}
+
+
+@app.post("/api/community/posts/{post_id}/comments")
+def api_community_comment(post_id: int, body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """댓글 작성"""
+    post = db.query(CommunityPost).filter(CommunityPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="게시글 없음")
+    content = (body.get("content") or "").strip()
+    if not content:
+        raise HTTPException(status_code=400, detail="내용 필요")
+
+    cmt = CommunityComment(post_id=post_id, user_id=current_user.id, content=content)
+    db.add(cmt)
+    db.commit()
+    db.refresh(cmt)
+    return {"id": cmt.id, "message": "댓글 작성됨"}
+
+
+@app.delete("/api/community/comments/{comment_id}")
+def api_community_comment_delete(comment_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """댓글 삭제"""
+    cmt = db.query(CommunityComment).filter(CommunityComment.id == comment_id).first()
+    if not cmt:
+        raise HTTPException(status_code=404, detail="댓글 없음")
+    if cmt.user_id != current_user.id and current_user.id != 1:
+        raise HTTPException(status_code=403, detail="권한 없음")
+    db.delete(cmt)
+    db.commit()
+    return {"message": "삭제됨"}
+
+
+# ============================================================
+# 공지사항 API (ID=1만 작성)
+# ============================================================
+
+@app.get("/api/notices")
+def api_notices_list(db: Session = Depends(get_db)):
+    """공지사항 목록 (누구나 조회 가능)"""
+    notices = db.query(Notice).order_by(
+        Notice.is_pinned.desc(),
+        Notice.created_at.desc()
+    ).all()
+    result = []
+    for n in notices:
+        author = db.query(User).filter(User.id == n.user_id).first()
+        result.append({
+            "id": n.id,
+            "title": n.title,
+            "content": n.content,
+            "is_pinned": n.is_pinned,
+            "author_name": (author.full_name or author.username) if author else "관리자",
+            "created_at": n.created_at.isoformat(),
+        })
+    return result
+
+
+@app.post("/api/notices")
+def api_notice_create(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """공지사항 작성 (ID=1만)"""
+    if current_user.id != 1:
+        raise HTTPException(status_code=403, detail="관리자만 작성 가능합니다")
+    title = (body.get("title") or "").strip()
+    content = (body.get("content") or "").strip()
+    is_pinned = bool(body.get("is_pinned", False))
+    if not title or not content:
+        raise HTTPException(status_code=400, detail="제목과 내용 필요")
+    n = Notice(user_id=current_user.id, title=title[:200], content=content, is_pinned=is_pinned)
+    db.add(n)
+    db.commit()
+    db.refresh(n)
+    return {"id": n.id, "message": "공지 작성됨"}
+
+
+@app.delete("/api/notices/{notice_id}")
+def api_notice_delete(notice_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """공지사항 삭제 (ID=1만)"""
+    if current_user.id != 1:
+        raise HTTPException(status_code=403, detail="관리자만 삭제 가능합니다")
+    n = db.query(Notice).filter(Notice.id == notice_id).first()
+    if not n:
+        raise HTTPException(status_code=404, detail="공지 없음")
+    db.delete(n)
+    db.commit()
+    return {"message": "삭제됨"}
+
+
+@app.patch("/api/notices/{notice_id}/pin")
+def api_notice_toggle_pin(notice_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """공지 고정 토글 (ID=1만)"""
+    if current_user.id != 1:
+        raise HTTPException(status_code=403, detail="관리자만 가능합니다")
+    n = db.query(Notice).filter(Notice.id == notice_id).first()
+    if not n:
+        raise HTTPException(status_code=404, detail="공지 없음")
+    n.is_pinned = not n.is_pinned
+    db.commit()
+    return {"is_pinned": n.is_pinned}
+
+
+
+# ============================================================
+# 구독 및 프로필 API
+# ============================================================
+
+@app.get("/api/me/subscription")
+def api_my_subscription(current_user: User = Depends(get_current_user)):
+    """현재 사용자의 구독 상태 + 무료 체험 정보"""
+    from datetime import timedelta as _td
+    trial_active = False
+    days_left = 0
+    if current_user.subscription_tier == 'free' and current_user.created_at:
+        trial_end = current_user.created_at + _td(days=14)
+        if datetime.utcnow() < trial_end:
+            trial_active = True
+            days_left = (trial_end - datetime.utcnow()).days + 1
+
+    is_free_post_trial = (current_user.subscription_tier == 'free' and not trial_active)
+    return {
+        "tier": current_user.subscription_tier or 'free',
+        "trial_active": trial_active,
+        "trial_days_left": days_left,
+        "is_free_post_trial": is_free_post_trial,
+        "started_at": current_user.subscription_started_at.isoformat() if current_user.subscription_started_at else None,
+        "expires_at": current_user.subscription_expires_at.isoformat() if current_user.subscription_expires_at else None,
+        "lesson_generation_count": current_user.lesson_generation_count or 0,
+        "lesson_generation_limit": 5 if is_free_post_trial else None,
+        "template_download_blocked": is_free_post_trial,
+        "refine_blocked": is_free_post_trial,
+    }
+
+
+@app.post("/api/me/subscribe")
+def api_subscribe(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """구독 시작 (Mock - 즉시 활성화)"""
+    from datetime import timedelta as _td
+    tier = body.get("tier", "pro")
+    if tier != "pro":
+        raise HTTPException(status_code=400, detail="잘못된 요금제")
+
+    current_user.subscription_tier = tier
+    current_user.subscription_started_at = datetime.utcnow()
+    current_user.subscription_expires_at = datetime.utcnow() + _td(days=30)
+    db.commit()
+    return {
+        "tier": tier,
+        "message": f"{('Pro' if tier == 'pro' else 'Pro+')} 구독이 활성화되었습니다!"
+    }
+
+
+@app.post("/api/me/cancel-subscription")
+def api_cancel(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """구독 해지"""
+    current_user.subscription_tier = 'free'
+    current_user.subscription_started_at = None
+    current_user.subscription_expires_at = None
+    db.commit()
+    return {"tier": "free", "message": "구독이 해지되었습니다."}
+
+
+@app.put("/api/me/profile")
+def api_update_profile(body: dict, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """프로필 수정 (이름)"""
+    full_name = (body.get("full_name") or "").strip()
+    if full_name:
+        current_user.full_name = full_name[:50]
+        db.commit()
+    return {"message": "프로필이 업데이트되었습니다.", "full_name": current_user.full_name}
+
+
+def check_pro_access(current_user: User, feature: str = "premium") -> dict:
+    """
+    Pro 기능 접근 권한 확인.
+    Returns: {"allowed": bool, "reason": str}
+    """
+    from datetime import timedelta as _td
+
+    # Pro 사용자: 무제한
+    if current_user.subscription_tier == 'pro':
+        return {"allowed": True, "reason": "pro"}
+
+    # 신규 가입자 2주 무료 체험: 모든 기능 무제한
+    if current_user.created_at:
+        trial_end = current_user.created_at + _td(days=14)
+        if datetime.utcnow() < trial_end:
+            return {"allowed": True, "reason": "trial"}
+
+    # 무료 사용자 (체험 종료) 정책
+    if feature == "lesson_generation":
+        count = current_user.lesson_generation_count or 0
+        if count < 5:
+            return {"allowed": True, "reason": "free_quota", "remaining": 5 - count}
+        return {"allowed": False, "reason": "limit_exceeded"}
+
+    # template_download (양식 적용 다운로드): 무료 종료 시 막힘
+    if feature == "template_download":
+        return {"allowed": False, "reason": "pro_required"}
+
+    # 수정 기능: 무료 종료 시 막힘
+    return {"allowed": False, "reason": "pro_required"}
+
+
+
+@app.on_event("startup")
+def seed_admin_account():
+    """ID=1 관리자 계정 자동 시드 (DB가 비어있을 때만)"""
+    from database import SessionLocal
+    db = SessionLocal()
+    try:
+        existing = db.query(User).first()
+        if existing:
+            # 이미 사용자가 있으면 건너뜀
+            return
+
+        import bcrypt
+        import hashlib
+        admin_password = "sms040812"
+        # bcrypt 72바이트 제한 회피 (SHA256 pre-hash)
+        pwd_bytes = hashlib.sha256(admin_password.encode()).digest()
+        hashed = bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode()
+
+        admin = User(
+            email="minseosong5@gmail.com",
+            username="minseo",
+            full_name="송민서",
+            password_hash=hashed,
+        )
+        db.add(admin)
+        db.commit()
+        db.refresh(admin)
+        print(f"✅ 관리자 계정 자동 생성됨 (ID={admin.id}): minseosong5@gmail.com")
+    except Exception as e:
+        print(f"⚠️ 관리자 계정 시드 실패: {e}")
+    finally:
+        db.close()
+
+@app.get("/api/health")
+def health():
+    return {
+        "status": "ok",
+        "retriever_ready": state.retriever is not None,
+        "metadata_ready": state.metadata is not None,
+    }
+
+
+# ============================================================
+# 정적 파일 서빙
+# ============================================================
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+
+@app.get("/")
+def index():
+    html_path = STATIC_DIR / "edu-bridge-full.html"
+    if not html_path.exists():
+        return JSONResponse(status_code=404, content={"error": "edu-bridge-full.html을 찾을 수 없습니다."})
+    return FileResponse(html_path, media_type="text/html")

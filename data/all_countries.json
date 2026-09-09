@@ -1,0 +1,754 @@
+{
+  "metadata": {
+    "project_name": "유아교육과정 RAG 시스템 - 10개국 통합 데이터",
+    "team": "초코소라빵",
+    "total_countries": 10,
+    "total_chunks": 163,
+    "total_core_philosophy_chunks": 88,
+    "total_differentiators": 60,
+    "schema_version": "1.0",
+    "merge_date": "2026-05-02",
+    "description": "RAG 1차 가중치 검색용 - 각 나라의 philosophy_summary를 임베딩하여 국가별 점수 산출에 활용"
+  },
+  "countries": [
+    {
+      "country": "핀란드",
+      "country_code": "FIN",
+      "framework_name": "National core curriculum for early childhood education and care (2022)",
+      "framework_metadata": {
+        "issuing_body": "Finnish National Agency for Education",
+        "regulation_id": "OPH-700-2022",
+        "source_pdf": "National_core_curriculum_for_ECEC_2022.pdf",
+        "publication_year": 2022,
+        "language_original": "English",
+        "total_pages": 68
+      },
+      "core_philosophy": {
+        "philosophy_summary": "핀란드 ECEC는 교육·교수·돌봄을 분리하지 않고 페다고지 중심의 통합체(EduCare)로 제공하며, 아동기 자체를 본질적 가치로 보고 모든 아동의 포용적 참여와 능동적 행위성을 핵심으로 한다. 진단 없이도 즉시 접근 가능한 3단계 지원 체계와 페다고지 문서화를 통한 아동중심 평가, 다전문가 협력이 일상 속에서 작동한다.",
+        "identity_keywords": [
+          "EduCare 통합",
+          "아동기의 본질적 가치",
+          "포용성(Inclusion)",
+          "놀이의 본질적 가치",
+          "능동적 행위자로서의 아동",
+          "언어 인식 교육",
+          "페다고지 문서화",
+          "3단계 적시 지원",
+          "다전문가 협력 공동체",
+          "지속가능한 삶의 방식",
+          "횡단적 역량"
+        ],
+        "differentiators": [
+          {
+            "name": "EduCare 통합",
+            "description": "교육(education)·교수(instruction)·돌봄(care)이 페다고지 중심으로 하나의 통합체를 이루며, 식사·옷 입기·휴식·위생 같은 일상 돌봄 상황도 항상 교육적·교수적 상황으로 활용된다.",
+            "source_quote": "education, instruction and care form a coherent entity (...) the care situations are always both educational and instructive situations",
+            "source_location": "Section 2.6, p.19-20"
+          },
+          {
+            "name": "아동기의 본질적 가치",
+            "description": "ECEC는 아동기를 미래를 위한 준비 단계가 아니라 그 자체로 본질적 가치를 가진 시기로 보며, 모든 아동을 고유하고 가치 있는 존재로 경청·인정한다.",
+            "source_quote": "ECEC is based on the concept of the intrinsic value of childhood. Each child is unique and valuable just as child is.",
+            "source_location": "Section 2.4, p.18"
+          },
+          {
+            "name": "포용성(Inclusion) 원칙",
+            "description": "지원 요구·장애·문화적 배경에 관계없이 모든 아동이 함께 ECEC에 참여할 권리를 가지며, 포용은 단순 통합이 아닌 운영 전반에 적용되는 가치이자 전인적 사고방식이다.",
+            "source_quote": "Inclusiveness is a broad concept and should be seen as a principle, value and holistic way of thinking that applies to all children in the provision of ECEC.",
+            "source_location": "Section 1, p.4"
+          },
+          {
+            "name": "3단계 적시 지원 체계",
+            "description": "일반→강화→특별 지원의 유연한 연속체로, 의료적 진단이나 의학적 의견 없이도 아동의 요구가 확인되는 즉시 지원이 시작되며, 단계 간 이동이 자유롭다.",
+            "source_quote": "No medical diagnosis or other opinion issued by the health care or social welfare services is needed in order for the child to access support.",
+            "source_location": "Section 5.3, p.57"
+          },
+          {
+            "name": "페다고지 문서화",
+            "description": "관찰·기록·해석을 통해 아동중심 실천을 만들어가는 지속적이고 참여적인 평가 방식으로, 아동과 보호자가 활동의 평가·계획·개발에 함께 참여한다.",
+            "source_quote": "Pedagogical documentation enables the participation of children and guardians in evaluating, planning, and developing the activities. (...) The purpose of pedagogical documentation is to implement ECEC in a child-focused manner.",
+            "source_location": "Section 4.2, p.36"
+          },
+          {
+            "name": "횡단적 역량 6개 영역",
+            "description": "사고와 학습, 문화적 역량·상호작용·자기표현, 자기 돌봄과 일상생활 관리, 다중문해력, 디지털 역량, 참여와 관여 — 6개 역량이 ECEC부터 기초교육까지 연속체를 형성한다.",
+            "source_quote": "Six interconnected transversal competence areas are described in the national core curriculum for early childhood education",
+            "source_location": "Section 2.7, p.21"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 27,
+      "core_philosophy_chunk_count": 11
+    },
+    {
+      "country": "대한민국",
+      "country_code": "KOR",
+      "framework_name": "2019 개정 누리과정",
+      "framework_metadata": {
+        "issuing_body": "교육부 / 보건복지부",
+        "regulation_id": "교육부 고시 제2019-189호 / 보건복지부 고시 제2019-152호",
+        "source_pdf": "2019개정누리과정고시문-교육부.pdf, 누리과정_해설서_.pdf",
+        "publication_year": 2019,
+        "implementation_year": 2020,
+        "language_original": "Korean",
+        "applicable_age": "3~5세",
+        "applicable_institutions": "유치원, 어린이집"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "2019 개정 누리과정은 유치원과 어린이집에 공통 적용되는 국가 수준의 교육과정으로, '유아·놀이 중심'으로의 패러다임 전환을 핵심으로 한다. 교사가 계획·주도하던 교육과정에서 유아가 주도하는 놀이를 중심으로 하는 교육과정으로 전환하며, 유아를 '놀이의 주체'이자 '유능한 학습자'로 보고 비구조화된 자료와 유연한 공간에서 5개 영역의 통합적 배움이 자연스럽게 일어나도록 지원한다.",
+        "identity_keywords": [
+          "유아·놀이 중심 교육과정",
+          "유아 주도성",
+          "5가지 인간상(건강·자주·창의·감성·더불어)",
+          "5개 영역 통합 배움",
+          "놀이를 통한 배움",
+          "교사의 자율성",
+          "유아의 행복권",
+          "비구조화된 자료",
+          "공간의 유연성",
+          "관찰자·지원자로서의 교사",
+          "유아 이해 중심 평가"
+        ],
+        "differentiators": [
+          {
+            "name": "유아·놀이 중심 교육과정으로의 패러다임 전환",
+            "description": "교사가 미리 계획·주도하던 교육과정에서 '유아가 주도하는 놀이를 중심으로' 교육과정을 구성·운영하는 것으로의 명시적 전환. '유아·놀이 중심'을 누리과정의 정체성으로 규정.",
+            "source_quote": "개정 누리과정은 교사가 계획하여 주도하는 교육과정에서 유아가 주도적으로 놀이하며 배우는 교육과정으로의 변화를 추구한다.",
+            "source_location": "해설서 제2부 총론 해설 I.다, p.26"
+          },
+          {
+            "name": "5가지 인간상의 통합적 추구",
+            "description": "건강한 사람, 자주적인 사람, 창의적인 사람, 감성이 풍부한 사람, 더불어 사는 사람 — 초·중등 교육과정과 연계되면서도 유아기 특성을 반영한 한국 고유의 인간상 분류. 특히 '건강한 사람'과 '감성이 풍부한 사람'은 유아기 특성 반영.",
+            "source_quote": "이 중 '건강한 사람'은 누리과정에서만 제시된 인간상으로, 일생에서 가장 중요한 신체와 정신 건강의 기초를 형성하는 유아기의 특성을 고려한 것이다.",
+            "source_location": "해설서 제2부 총론 해설 II.1, p.28"
+          },
+          {
+            "name": "유치원·어린이집 통합 적용 (공통 교육과정)",
+            "description": "유치원(교육부)과 어린이집(보건복지부)이라는 이원화된 기관에 동일하게 적용되는 단일 국가 수준 교육과정. '공통'이 유치원과 어린이집 모두를 지칭함을 명시.",
+            "source_quote": "여기서 '공통'이란 유치원과 어린이집 모두를 지칭한다. 국가 수준의 공통 교육과정으로서 누리과정은 3∼5세 유아가 다니는 유치원과 어린이집에서 누리과정을 운영할 때 우선적으로 고려해야 할 공통적이고 일반적인 기준을 국가가 고시한 것이다.",
+            "source_location": "해설서 제2부 총론 해설 I, p.24-25"
+          },
+          {
+            "name": "5개 영역의 통합적 운영 (생활주제 탈피)",
+            "description": "신체운동·건강, 의사소통, 사회관계, 예술경험, 자연탐구의 5개 영역을 영역별 분리 수업이 아니라, 유아의 놀이 흐름 속에서 자연스럽게 통합적으로 경험하도록 운영. 정해진 생활주제 중심 운영에서 탈피.",
+            "source_quote": "유아의 흥미나 관심 등을 고려하지 않고 미리 정해진 생활주제에 따라 활동을 진행하기보다는 유아가 주도해 가는 놀이와 연계하여 활동을 진행하는 것이 바람직하다.",
+            "source_location": "해설서 제2부 총론 해설 III.2, p.46"
+          },
+          {
+            "name": "교사의 자율성과 다층적 다양성",
+            "description": "국가 수준 공통성을 유지하면서 지역·기관·개인 수준의 다양성을 동시 추구. 교사가 자율성을 가지고 유아와 함께 교육과정을 만들어가는 주체로 위치.",
+            "source_quote": "개정 누리과정은 국가 수준의 교육과정이 제시하는 공통적이고 일반적 기준을 바탕으로 교사가 자율성을 가지고 유아와 함께 교육과정을 만들어 나가는 것을 강조한다.",
+            "source_location": "해설서 제2부 총론 해설 I.마, p.27"
+          },
+          {
+            "name": "유아의 현재적 행복권",
+            "description": "교육을 미래를 위한 준비가 아니라 '유아가 지금 여기서 누리는 행복'으로 규정. 놀 권리, 쉴 권리, 의견을 존중받을 권리를 교육 현장에서 실현.",
+            "source_quote": "개정 누리과정은 유아가 전인적 발달과 행복을 추구할 권리를 존중한다. (...) 유아는 자유롭게 놀이할 때 즐겁고 행복하다.",
+            "source_location": "해설서 제2부 총론 해설 I.나, p.26"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 20,
+      "core_philosophy_chunk_count": 10
+    },
+    {
+      "country": "호주",
+      "country_code": "AUS",
+      "framework_name": "Belonging, Being & Becoming: The Early Years Learning Framework for Australia (V2.0, 2022)",
+      "framework_metadata": {
+        "issuing_body": "Australian Government Department of Education for the Ministerial Council",
+        "regulation_id": "EYLF V2.0 (S220(1)(f) Education and Care Services National Law)",
+        "source_pdf": "EYLF-2022-V2.0.pdf (ACECQA)",
+        "publication_year": 2022,
+        "language_original": "English",
+        "applicable_age": "birth to 5 years (출생부터 만 5세까지, 학교 전환기 포함)",
+        "structure": "Vision + 8 Principles + 7 Practices + 5 Learning Outcomes",
+        "philosophical_basis": "UN Convention on the Rights of the Child + Alice Springs (Mparntwe) Education Declaration"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "호주 EYLF는 'Belonging(소속감)·Being(존재감)·Becoming(되어감)'이라는 3중 비전을 핵심으로 하며, 유아기를 미래를 위한 준비기가 아닌 '지금 여기'의 권리로 본다. 8개 원칙(Principles), 7개 실천(Practices), 5개 학습 성과(Learning Outcomes)의 통합 구조 안에서 호주 원주민(Aboriginal and Torres Strait Islander) 관점의 의무적 내재화, 환경·사회·경제 3차원 지속가능성, 'Country(대지)'와의 영적 연결을 통한 화해(Reconciliation)를 추구한다.",
+        "identity_keywords": [
+          "Belonging(소속감)",
+          "Being(존재감)",
+          "Becoming(되어감)",
+          "원주민 관점 의무 내재화",
+          "Country(대지)와의 연결",
+          "놀이 중심 학습 + 의도성",
+          "유아의 주도성(Agency)",
+          "지속가능성 3차원(환경·사회·경제)",
+          "5개 학습 성과(Learning Outcomes)",
+          "관계적·장소 기반 페다고지",
+          "5단계 계획 주기",
+          "문화 반응성(Cultural Responsiveness)"
+        ],
+        "differentiators": [
+          {
+            "name": "Belonging-Being-Becoming 3중 비전",
+            "description": "유아의 삶을 '소속감(누구와 어디에 속해 있는가)·존재감(현재의 권리)·되어감(역동적 변화 과정)'의 3중 비전으로 규정. 다른 나라 어느 교육과정에서도 찾아볼 수 없는 호주 EYLF만의 정체성 개념.",
+            "source_quote": "Fundamental to the Framework is a view of children's lives as characterised by belonging, being and becoming. (...) The early childhood years are not solely preparation for the future but also about children being in the here and now.",
+            "source_location": "A Vision for Children's Learning, p.6"
+          },
+          {
+            "name": "원주민 관점의 의무적 내재화 (Aboriginal and Torres Strait Islander perspectives)",
+            "description": "원주민 아동의 등록 여부와 무관하게, 모든 교육자가 원주민의 지식 체계·전통·언어·Country와의 연결을 교육철학과 실천에 의무적으로 내재화해야 함. 'Closing the Gap'과 화해(Reconciliation)에 기여하는 호주 고유의 원칙.",
+            "source_quote": "Embedding Aboriginal and Torres Strait Islander perspectives is a shared responsibility of approved providers, educators, and other professionals working in early childhood educational settings, regardless of whether Aboriginal and Torres Strait Islander children and families are enrolled in that setting.",
+            "source_location": "Principles - Aboriginal and Torres Strait Islander perspectives, p.16"
+          },
+          {
+            "name": "Country(대지)와의 영적 연결",
+            "description": "단순한 '땅'이 아닌 대문자 'Country' 개념. 원주민 아동에게 영성(spirituality)과 연결되며, 조상·가족·친족 체계·공동체와의 관계를 포함하는 호주 고유의 교육 개념. 모든 아동이 'on Country'에서 'from Country' 배움.",
+            "source_quote": "For Aboriginal and Torres Strait Islander children, their spirituality is connected to Country, and the connection is strong. It is in their relationships and how they communicate with their ancestors, families, kinship systems and communities.",
+            "source_location": "Practices - Learning environments, p.23"
+          },
+          {
+            "name": "지속가능성의 3차원 통합 (환경·사회·경제)",
+            "description": "지속가능성을 자연 보호로만 좁히지 않고 환경·사회·경제 3차원의 상호연결로 정의. '7Rs(reduce, reuse, recycle, respect, repair, reflect, refuse)'를 유아 교육에 통합한 호주 고유의 접근.",
+            "source_quote": "Broadly defined, sustainability spans environmental, social, and economic dimensions which are intertwined. (...) become aware and use the 7Rs of sustainability: reduce, reuse, recycle, respect, repair, reflect and refuse",
+            "source_location": "Principles - Sustainability, p.17 / Outcome 2, p.39"
+          },
+          {
+            "name": "놀이 중심 학습 + 의도성(Intentionality) 결합",
+            "description": "'Play-based learning AND intentionality' — 놀이의 본성을 존중하면서도 교사가 의도적·사려깊은 결정으로 적극 개입. 자유 놀이와 교사 주도 사이의 균형을 명시적으로 강조.",
+            "source_quote": "Play-based learning approaches allow for different types of play and recognise the intentional roles that both children and educators may take in children's learning. (...) provide a balance between child-led and adult initiated and guided play",
+            "source_location": "Practices - Play-based learning and intentionality, p.21-22"
+          },
+          {
+            "name": "5개 Learning Outcomes 통합 구조",
+            "description": "정체성, 세상과의 연결, 웰빙, 학습자 자신감, 효과적 의사소통의 5개 학습 성과. Vision-Principles-Practices-Outcomes의 4층 통합 구조 안에서 작동하는 호주 고유의 명료한 분류 체계.",
+            "source_quote": "The Framework conveys the highest expectations for all children's learning, development and wellbeing from birth to 5 years and through the transitions to school. It communicates these expectations through the following 5 Learning Outcomes",
+            "source_location": "A Vision for Children's Learning, p.7"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 12,
+      "core_philosophy_chunk_count": 7
+    },
+    {
+      "country": "독일",
+      "country_code": "GER",
+      "framework_name": "Berliner Bildungsprogramm (BBP) - 베를린 교육 프로그램",
+      "framework_metadata": {
+        "issuing_body": "Senatsverwaltung für Bildung, Jugend und Familie Berlin (베를린 교육·청소년·가족부)",
+        "regulation_id": "Berliner Bildungsprogramm 2014 (개정판)",
+        "source_pdf": "berliner_bildungsprogramm_2014.pdf",
+        "publication_year": 2014,
+        "language_original": "Deutsch",
+        "applicable_age": "0-6세 (Kita 영유아 보육·교육 기관)",
+        "structure": "상황중심 교육(Situationsansatz) + 7개 교육·발달 영역(Bildungsbereiche) + 참여(Partizipation) + 포용성(Inklusion)",
+        "philosophical_basis": "Situationsansatz(상황중심 교육론) + UN 아동권리협약 + 독일 기본법(Grundgesetz)의 인간 존엄성 원칙"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "독일 베를린 교육 프로그램(BBP)의 핵심은 '상황중심 교육(Situationsansatz)'이다. 분절된 교과가 아닌 유아의 의미 있는 일상 상황·갈등·사회적 문제 자체를 학습 주제로 삼는다. 유아를 태어날 때부터 능동적이고 유능한 주체(Competent Child)로 보며, 유치원을 작은 민주주의 공동체로 보고 자치 회의·투표 등 '민주적 참여(Partizipation)'를 일상화한다. 차별 없는 '포용성(Inklusion)'을 절대 원칙으로 삼고, 갈등을 회피하지 않고 협상의 기회로 삼는 '사회적 연대감(Soziale Solidarität)' 형성을 핵심 역량으로 본다. 평가는 '언어 학습 일기(Sprachlerntagebuch)'와 포트폴리오를 통한 서사적 기록으로 이루어진다.",
+        "identity_keywords": [
+          "상황중심 교육(Situationsansatz)",
+          "유능한 주체(Competent Child)",
+          "민주적 참여(Partizipation)",
+          "자치 회의",
+          "포용성(Inklusion)",
+          "사회적 연대감(Soziale Solidarität)",
+          "갈등의 교육화",
+          "일상의 교육화",
+          "언어 학습 일기(Sprachlerntagebuch)",
+          "서사적 평가",
+          "자기효능감(Selbstwirksamkeit)",
+          "위험 대처 능력",
+          "학습 동반자로서의 교사",
+          "다양성 존중"
+        ],
+        "differentiators": [
+          {
+            "name": "상황중심 교육 (Situationsansatz)",
+            "description": "독일 유아교육의 가장 고유한 철학. 수학 시간·언어 시간 같은 분절된 교과가 아닌, 유아의 실제 삶에서 일어나는 의미 있는 상황(공사장 출현, 친구와의 다툼, 동네 변화 등)을 그대로 학습 주제로 삼아 통합적으로 접근. 호주의 '놀이 중심+의도성', 이탈리아의 '경험 영역'과도 다른 독일 고유의 일상 맥락 기반 페다고지.",
+            "source_quote": "Der Situationsansatz orientiert sich an den realen Lebenssituationen der Kinder und ihrer Familien. Bildung findet im Kontext bedeutsamer Alltagssituationen statt.",
+            "source_location": "Berliner Bildungsprogramm, Pädagogisch-theoretische Grundlagen"
+          },
+          {
+            "name": "민주적 참여(Partizipation)와 유치원 자치",
+            "description": "유치원을 '작은 민주주의 사회'로 정의. 아이들이 자신의 일상에 관한 결정(놀이 선택, 간식 메뉴, 규칙 제정)에 자치 회의·투표로 직접 참여할 권리를 가진 시민으로 봄. 한국의 '유아 주도'나 호주의 'Agency'를 넘어, 제도화된 민주적 절차를 유아교육에 적용하는 점이 독일 고유.",
+            "source_quote": "Kinder haben das Recht, an allen sie betreffenden Entscheidungen mitzuwirken. Die Kita ist ein Ort, an dem Demokratie täglich gelebt und erfahren wird.",
+            "source_location": "Berliner Bildungsprogramm, Partizipation als Grundprinzip"
+          },
+          {
+            "name": "포용성(Inklusion)을 절대 원칙으로 명시",
+            "description": "성별·장애·문화적·언어적·경제적 배경에 따른 어떠한 차별도 발생하지 않도록 하는 것이 절대적 원칙. 단순한 '다양성 존중' 수준을 넘어, 모든 아이가 동등하게 참여하고 소속감을 느끼도록 물리적·심리적 환경을 완벽하게 열어두는 것을 지향. 핀란드의 '포용성' 원칙과 결을 같이 하지만 독일은 이민자 가정의 다언어성을 특히 강조.",
+            "source_quote": "Inklusion bedeutet, dass alle Kinder unabhängig von Geschlecht, Herkunft, Sprache, Religion, Behinderung oder sozialer Lage gleichberechtigt am Bildungsprozess teilhaben.",
+            "source_location": "Berliner Bildungsprogramm, Inklusion"
+          },
+          {
+            "name": "사회적 연대감(Soziale Solidarität) - 갈등의 교육화",
+            "description": "아이들 간의 다툼이나 의견 충돌을 교사가 일방적으로 중재(지시)하지 않고, 아이들 스스로 협상하고 타협점을 찾도록 지켜보는 접근. 갈등은 회피해야 할 문제가 아니라 협상·타협·민주적 의사결정을 배우는 가장 좋은 교육 기회. 다른 나라들이 '협력'을 강조한다면, 독일은 '갈등 자체의 교육적 가치'를 명시.",
+            "source_quote": "Konflikte sind Bildungsanlässe. Kinder lernen in der Auseinandersetzung mit anderen, eigene Bedürfnisse zu vertreten und gemeinsam Lösungen auszuhandeln.",
+            "source_location": "Berliner Bildungsprogramm, Bildungsbereich Soziale und kulturelle Umwelt"
+          },
+          {
+            "name": "유능한 주체(Kompetentes Kind) - 위험 감수까지 포함",
+            "description": "유아를 보호받아야 하는 존재가 아닌, 태어날 때부터 스스로 세상을 탐구하고 권리를 행사하는 '능동적이고 유능한 주체'로 봄. 특히 '무균실 같은 환경'을 거부하고 유아가 스스로 위험을 인지·대처하는 능력을 기르도록 의도적으로 도전적 환경을 제공. 한국·호주의 유아관과 결을 같이하면서도 '위험 대처 능력' 강조가 독일 고유.",
+            "source_quote": "Kinder sind von Anfang an kompetent. Sie haben das Recht und die Fähigkeit, ihre Welt aktiv zu erforschen und mit Risiken umzugehen.",
+            "source_location": "Berliner Bildungsprogramm, Bild vom Kind"
+          },
+          {
+            "name": "언어 학습 일기(Sprachlerntagebuch) - 서사적 평가",
+            "description": "표준화된 테스트나 체크리스트를 거부하고, 유아의 발달을 '언어 학습 일기'와 포트폴리오를 통해 서사적으로 기록. 유아 본인·부모·교사가 함께 성장을 공유하는 도구. 이탈리아의 'Documentazione', 핀란드의 'Pedagogical documentation'과 유사하지만, 독일은 특히 다언어 가정 유아의 모국어 발달까지 기록하는 점이 차별적.",
+            "source_quote": "Das Sprachlerntagebuch dokumentiert die individuelle Sprachentwicklung jedes Kindes und macht Bildungsprozesse für Kind, Eltern und Pädagog*innen sichtbar.",
+            "source_location": "Berliner Bildungsprogramm, Sprachlerntagebuch und Portfolio"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 12,
+      "core_philosophy_chunk_count": 8
+    },
+    {
+      "country": "이탈리아",
+      "country_code": "ITA",
+      "framework_name": "유치원 및 제1주기 교육과정 국가 지침 (Indicazioni nazionali per il curricolo della scuola dell'infanzia e del primo ciclo d'istruzione)",
+      "framework_metadata": {
+        "issuing_body": "Ministero dell'Istruzione e del Merito (이탈리아 교육부)",
+        "regulation_id": "Indicazioni nazionali 2012 / Nuovi scenari 2018 (개정판)",
+        "source_pdf": "curricolo_web.pdf",
+        "publication_year": 2012,
+        "language_original": "Italiano",
+        "applicable_age": "3-6세 유치원(scuola dell'infanzia) + 제1주기 교육 (초등 1-5학년 + 중학교 1-3학년)",
+        "applicable_institutions": "scuola dell'infanzia (유치원), scuola primaria (초등), scuola secondaria di primo grado (중등 1주기)",
+        "structure": "인간 중심 비전 + 5개 경험 영역(Campi di esperienza) + 학습 환경 + 교육적 문서화",
+        "philosophical_basis": "이탈리아 헌법 정신 + 레지오 에밀리아 접근법 + 보편적 학습 설계(UDL)"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "이탈리아 교육과정은 헌법 정신에 기반한 '인간(Persona)의 중심성'을 최상위 가치로, 유아를 권리의 능동적 주체(Soggetto attivo)로 본다. 레지오 에밀리아의 '100가지 언어' 철학을 수용하여 다원적 언어 표현을 인정하며, 5개 '경험 영역(Campi di esperienza)'을 통한 통합 교육, 발견적 도구로서의 놀이, 교육적 문서화(Documentazione)를 통한 가치 부여(Valorizzazione)의 평가, 학습의 연출가(Regista)이자 안내자인 교사상, 가정·지역사회와의 교육적 공동 책임(Corresponsabilità)을 핵심으로 한다. 보편적 학습 설계(UDL)와 아틀리에(Atelier) 환경을 통해 모든 유아의 완전 포용을 지향한다.",
+        "identity_keywords": [
+          "인간(Persona)의 중심성",
+          "능동적 주체(Soggetto attivo)",
+          "관계 중심 교육",
+          "100가지 언어",
+          "레지오 에밀리아 접근",
+          "경험 영역(Campi di esperienza)",
+          "발견적 도구로서의 놀이",
+          "교육적 문서화(Documentazione)",
+          "가치 부여(Valorizzazione)",
+          "학습의 연출가(Regista)",
+          "간접 교육(Educazione indiretta)",
+          "교육적 공동 책임(Corresponsabilità)",
+          "아틀리에(Atelier)",
+          "보편적 학습 설계(UDL)"
+        ],
+        "differentiators": [
+          {
+            "name": "인간(Persona)의 중심성 - 헌법 기반 교육철학",
+            "description": "이탈리아 헌법 정신에 직접 기반한 '인간(Persona)' 중심 교육. 유아의 인지·정서·관계·신체·미적·윤리·영적 차원을 모두 아우르는 전인적 형성을 최우선으로 함. 다른 나라 교육과정에서 헌법을 명시적 철학 토대로 삼는 경우는 드물며, 호주(Belonging-Being-Becoming), 핀란드(아동기의 본질적 가치), 한국(5가지 인간상)과 차별되는 이탈리아 고유의 인간관.",
+            "source_quote": "La scuola pone al centro della propria azione educativa la persona, nella sua complessità e unicità, in armonia con i principi della Costituzione.",
+            "source_location": "Centralità della persona, Indicazioni nazionali p.4-5"
+          },
+          {
+            "name": "레지오 에밀리아의 '100가지 언어(I cento linguaggi)' 수용",
+            "description": "유아가 미술·음악·신체 표현·디지털 매체 등 모든 감각적·시각적 매체를 통해 자신을 표현할 수 있는 '100가지 언어'를 가진 존재로 봄. 로리스 말라구치(Loris Malaguzzi)의 시(詩)에서 비롯된 이 개념은 이탈리아 고유의 다원적 언어관으로, 호주의 5개 Learning Outcomes나 핀란드의 6개 횡단적 역량과 근본적으로 다른 접근.",
+            "source_quote": "I bambini esprimono pensieri ed emozioni con immaginazione e creatività attraverso una pluralità di linguaggi (...) i cento linguaggi di cui parla Loris Malaguzzi.",
+            "source_location": "Immagini, suoni, colori - Campi di esperienza"
+          },
+          {
+            "name": "5개 경험 영역(Campi di esperienza) 통합 구조",
+            "description": "분절된 교과가 아닌 유아의 구체적 삶을 반영한 5개 경험 영역('나와 타인', '신체와 움직임', '이미지·소리·색상', '담화와 단어', '세계에 대한 지식')을 통한 통합 교육. 핀란드의 학습 영역(Areas of learning)이나 한국의 5개 영역과 다른 '경험(esperienza)' 중심 분류 체계로, 유아의 행위(fare)와 활동(agire)을 중심에 둠.",
+            "source_quote": "I campi di esperienza sono luoghi del fare e dell'agire del bambino orientati dall'azione consapevole degli insegnanti e introducono ai sistemi simbolico-culturali.",
+            "source_location": "I campi di esperienza, Indicazioni nazionali"
+          },
+          {
+            "name": "교사 = 학습의 연출가(Regista) + 간접 교육(Educazione indiretta)",
+            "description": "교사를 지식 전달자가 아닌 '학습의 연출가(Regista)'로 명시적으로 정의. 유아가 스스로 형태를 갖추도록 공간·시간·자료를 설계하는 '간접 교육(Educazione indiretta)' 개념은 이탈리아 고유의 교사상. 호주의 'intentionality(의도성)'나 한국의 '지원자로서의 교사'와 달리, 무대를 설계하고 조명을 비추되 직접 개입하지 않는 연극적 메타포가 핵심.",
+            "source_quote": "L'insegnante è regista educativo, ascolta, osserva, sostiene e accompagna i bambini in un processo di educazione indiretta che valorizza l'autonomia di pensiero.",
+            "source_location": "Il ruolo dell'insegnante / La professionalità docente"
+          },
+          {
+            "name": "교육적 문서화(Documentazione)와 가치 부여(Valorizzazione)",
+            "description": "평가를 서열화·측정이 아닌 유아의 학습 경로를 가시화하는 '교육적 문서화(Documentazione)' 과정으로 정의. 그 결과는 '가치 부여(Valorizzazione)'로 명명되며, 이는 레지오 에밀리아 전통에서 비롯된 이탈리아 고유의 평가 패러다임. 핀란드의 'pedagogical documentation'과 유사하나 '가치 부여'라는 윤리적 차원이 명시적으로 결합된 것이 특징.",
+            "source_quote": "La documentazione, come processo che produce tracce, memoria e riflessione, valorizza i percorsi di apprendimento e rende visibili le modalità e i percorsi di formazione.",
+            "source_location": "La valutazione e la documentazione, scuola dell'infanzia"
+          },
+          {
+            "name": "교육적 공동 책임(Corresponsabilità) - 학교·가정·지역사회 동맹",
+            "description": "교육을 학교 단독의 책임이 아닌 가정·지역사회와의 '교육적 동맹(Patto educativo di corresponsabilità)' 및 '공동 책임(Corresponsabilità)'으로 규정. 한국·호주의 '협력' 수준을 넘어 책임의 공유를 법적·제도적으로 명시하는 이탈리아 고유의 개념. 부모는 협력자가 아닌 공동 책임자(co-responsible)로 위치됨.",
+            "source_quote": "La scuola persegue costantemente l'obiettivo di costruire un'alleanza educativa con i genitori, mediante relazioni costanti che riconoscano i reciproci ruoli e si supportino vicendevolmente.",
+            "source_location": "L'ambiente di apprendimento / La scuola e le famiglie"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 14,
+      "core_philosophy_chunk_count": 10
+    },
+    {
+      "country": "일본",
+      "country_code": "JPN",
+      "framework_name": "유치원 교육요령 (幼稚園教育要領, Yōchien Kyōiku Yōryō)",
+      "framework_metadata": {
+        "issuing_body": "文部科学省 (일본 문부과학성, MEXT)",
+        "regulation_id": "幼稚園教育要領 平成29年告示 (헤이세이 29년/2017년 고시) - 2018년 4월 시행",
+        "source_pdf": "yochien_kyoiku_yoryo.pdf + yochien_kyoiku_yoryo_kaisetsu.pdf (해설서)",
+        "publication_year": 2017,
+        "language_original": "日本語",
+        "applicable_age": "만 3세 ~ 만 5세 (취학 전 유치원, 幼稚園)",
+        "structure": "교육 기본(환경을 통한 교육) + 3개 자질·능력 기둥 + 10가지 모습(10の姿) + 5개 영역(健康・人間関係・環境・言葉・表現)",
+        "philosophical_basis": "環境を通して行う教育 + 生きる力(살아가는 힘) + 心情・意欲・態度(심정·의욕·태도) + 학교교육법 + 평생학습 사회 비전"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "일본 유치원 교육요령은 '환경을 통한 교육(環境を通して行う教育)'을 모든 교육의 기본 원칙으로 삼는다. 교사가 직접 가르치는 것이 아니라, 유아가 의도적으로 구성된 환경과 자발적으로 상호작용하며 시행착오를 통해 스스로 의미를 발견하도록 돕는 '간접 교육' 모델이다. 평생을 살아갈 '살아가는 힘(生きる力)'의 기초를 3개 기둥(지식·기술의 기초, 사고력·판단력·표현력의 기초, 배움에 임하는 힘과 인간성)으로 함양하며, 유아기 종료 시점에 길러지길 바라는 '10가지 모습(10の姿)'을 구체적 발달 지표로 제시한다. 5개 영역(건강·인간관계·환경·언어·표현)은 분리된 교과가 아닌 놀이 속에서 통합적으로 함양되며, 평가는 '심정·의욕·태도(心情・意欲・態度)' 같은 비인지적 차원까지 세심하게 이해하는 '유아 이해(幼児理解)'에 기반한다. 교사는 환경의 구성자이자 유아에게 영향을 미치는 '인적 환경(人的環境)'으로 자각된다.",
+        "identity_keywords": [
+          "환경을 통한 교육 (環境を通して)",
+          "살아가는 힘 (生きる力)",
+          "10가지 모습 (10の姿)",
+          "3개 기둥 (3つの柱)",
+          "심정·의욕·태도 (心情・意欲・態度)",
+          "유아 이해 (幼児理解)",
+          "환경의 구성자",
+          "인적 환경 (人的環境)",
+          "5개 영역",
+          "놀이 중심 종합적 지도",
+          "시행착오와 기다림",
+          "공동 작업자",
+          "원내 연수 (園内研修)",
+          "체험의 질"
+        ],
+        "differentiators": [
+          {
+            "name": "환경을 통한 교육 (環境を通して行う教育)",
+            "description": "일본 유치원 교육요령의 가장 근본적이고 고유한 원칙. 교사가 지식을 직접 전달하는 것이 아니라, 유아가 의도적으로 구성된 환경과 자발적으로 상호작용하며 스스로 배움을 만들어가도록 함. 이탈리아의 '간접 교육(Educazione indiretta)', 호주의 '놀이 중심+의도성'과 결을 같이하나, 일본은 '환경'을 모든 교육의 기본 매개로 명시하고 교사가 '하지 않는 가르침'을 실천하는 점이 차별적. 8개국 중 가장 명시적으로 '환경'을 교육의 기본으로 못박은 사례.",
+            "source_quote": "幼児期の教育は、生涯にわたる人格形成の基礎を培う重要なものであり、幼稚園教育は、学校教育法に規定する目的及び目標を達成するため、幼児期の特性を踏まえ、環境を通して行うものであることを基本とする。",
+            "source_location": "幼稚園教育要領 第1章 総則 第1 (교육 기본 원칙)"
+          },
+          {
+            "name": "살아가는 힘(生きる力) - 3개 기둥 자질·능력",
+            "description": "일본 교육 전체의 평생 비전인 '살아가는 힘'의 기초를 유아교육에서 3개 기둥(지식 및 기술의 기초 / 사고력·판단력·표현력의 기초 / 배움에 임하는 힘과 인간성)으로 명시. 영국 EYFS의 17개 ELG처럼 측정가능한 성취 기준이 아니라, 평생학습의 토대로서 '인간성(人間性)'을 명시적으로 포함하는 점이 차별적. 호주 5 Outcomes, 핀란드 횡단적 역량과 다른 동양적 인간 형성관 반영.",
+            "source_quote": "幼稚園においては、生きる力の基礎を育むため、この章の第1に示す幼稚園教育の基本を踏まえ、次に掲げる資質・能力を一体的に育むよう努めるものとする。",
+            "source_location": "幼稚園教育要領 第1章 総則 第2 (자질·능력 3개 기둥)"
+          },
+          {
+            "name": "유아기 끝까지 길러지길 바라는 10가지 모습 (10の姿)",
+            "description": "유치원 수료 시점의 구체적 발달 지표로 '10가지 모습'을 제시: 건강한 심신 / 자립심 / 협동성 / 도덕성·규범의식의 싹트기 / 사회생활과의 관계 / 사고력의 싹트기 / 자연과의 관계·생명 존중 / 수량·도형 등에 대한 관심 / 언어를 통한 소통 / 풍부한 감성과 표현. 중요한 차별점은 이를 '도달해야 할 최종 목표'가 아닌 '지도 시 고려할 유아의 모습'으로 규정한 점. 영국 ELG의 책무성 평가와 달리 측정·서열화 도구가 아닌 교사의 시야를 위한 지표.",
+            "source_quote": "次に示すのは、第2章に示すねらい及び内容に基づく活動全体を通して資質・能力が育まれている幼児の幼稚園修了時の具体的な姿であり、教師が指導を行う際に考慮するものである。",
+            "source_location": "幼稚園教育要領 第1章 総則 第2 (10の姿)"
+          },
+          {
+            "name": "심정·의욕·태도 (心情・意欲・態度) 중심의 비인지적 평가",
+            "description": "5개 영역 각 목표의 핵심을 '심정(어떻게 느끼는가)·의욕(하고 싶어하는가)·태도(어떻게 임하는가)'로 명시. 인지적 성취가 아니라 정서적·동기적·자세적 차원을 평가의 핵심으로 삼는 일본 고유 개념. 영국의 ELG 17개 기준, 한국의 5개 영역 평가와 달리 '무엇을 할 수 있는가'보다 '어떤 마음으로 임하는가'를 중시. 동양 교육철학(공자의 '낙학(樂學)' 전통)이 현대 유아교육에 결합된 사례.",
+            "source_quote": "幼児の発達の側面から、心身の健康に関する領域『健康』、人とのかかわりに関する領域『人間関係』... 等が、それぞれのねらい及び内容として示されており、これらは心情・意欲・態度等の育ちを総合的に捉えるものである。",
+            "source_location": "幼稚園教育要領 第2章 ねらい及び内容 (5개 영역 목표 구성)"
+          },
+          {
+            "name": "교사 = 인적 환경(人的環境) + 공동 작업자",
+            "description": "교사를 '환경의 구성자(計画的な環境構成)'이자 동시에 '유아에게 영향을 미치는 인적 환경(人的環境)'으로 자각하도록 명시. 교사 자신의 표정·말투·행동이 모두 교육적 환경의 일부라는 관점은 일본 고유. 또한 유아와 함께 활동하며 배우는 '공동 작업자(共同作業者)'로서, 시행착오를 인정하고 기다리는 '대기의 미학(待つ教育)'을 실천. 이탈리아 'Regista', 독일 'Bildungsbegleiter', 뉴질랜드 'Ako'와 결을 같이하나, '인적 환경'이라는 자기 객관화 개념이 차별적.",
+            "source_quote": "教師は、幼児との信頼関係を十分に築き、幼児が身近な環境に主体的に関わり、環境との関わり方や意味に気付き、これらを取り込もうとして、試行錯誤したり、考えたりするようになる幼児期の教育における見方・考え方を生かし、幼児と共によりよい教育環境を創造するように努めるものとする。",
+            "source_location": "幼稚園教育要領 第1章 総則 第1 / 第4 (교사 역할)"
+          },
+          {
+            "name": "유아 이해(幼児理解)에 기반한 평가와 원내 연수(園内研修)",
+            "description": "평가를 서열화·기준 도달 판정이 아닌 '유아 이해'를 통한 지도 개선의 성찰 과정으로 정의. 교사는 유아의 말뿐 아니라 신체 전체로 표현하는 감정과 의도를 세심하게 읽어내며, 동료 교사와 함께 다각도로 분석하는 '원내 연수(園内研修)'가 평가의 타당성을 보장하는 핵심 장치. 핀란드 '페다고지 문서화', 이탈리아 'Documentazione'와 결을 같이하나, 일본은 '동료 교사 협력'과 '원내 연수'를 평가 시스템에 명시적으로 통합한 점이 차별적.",
+            "source_quote": "幼児一人一人のよさや可能性などを把握し、指導の改善に生かすようにすること。その際、他の幼児との比較や一定の基準に対する達成度についての評定によって捉えるものではないことに留意すること。",
+            "source_location": "幼稚園教育要領 第1章 総則 第4 (평가의 기본 방침)"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 12,
+      "core_philosophy_chunk_count": 6
+    },
+    {
+      "country": "뉴질랜드",
+      "country_code": "NZL",
+      "framework_name": "테 와리키 (Te Whāriki) - He whāriki mātauranga mō ngā mokopuna o Aotearoa: Early Childhood Curriculum",
+      "framework_metadata": {
+        "issuing_body": "New Zealand Ministry of Education (Te Tāhuhu o te Mātauranga)",
+        "regulation_id": "Te Whāriki 2017 (개정판) - 1996년 최초 제정",
+        "source_pdf": "Te-Whāriki-early-childhood-curriculum-full-document.pdf",
+        "publication_year": 2017,
+        "language_original": "English + Te Reo Māori (마오리어)",
+        "applicable_age": "출생 ~ 만 6세 (학교 진학 전)",
+        "structure": "비전 + 4개 원리(Principles) + 5개 영역(Strands) + 마오리·서구 이중문화 매트(Whāriki) 직조",
+        "philosophical_basis": "마오리 원주민 세계관(Mātauranga Māori) + 와이탕이 조약(Treaty of Waitangi) + UN 아동권리협약 + 사회문화이론(Vygotsky, Bronfenbrenner)"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "뉴질랜드 테 와리키는 마오리어로 '짜여진 매트(돗자리)'를 의미하며, 마오리 원주민 문화와 서구 정착민 문화를 동등하게 엮어내는 세계 최초의 이중문화 유아교육과정이다. 모든 유아는 조상으로부터 물려받은 영적 위엄(Mana)을 지닌 '유능하고 자신감 있는 학습자'로 본다. 4개 원리(권한부여·전인적 발달·가족과 공동체·관계)와 5개 영역(안녕·소속감·기여·의사소통·탐구)이 매트처럼 직조되며, 각 기관이 자기 지역의 가치로 고유한 매트를 짜는 자율성을 갖는다. 평가는 강점 기반의 '학습 이야기(Learning Stories)'로 이루어지며, 대지(Papatūānuku)와의 영적·관계적 연결을 통해 환경 수호자 의식을 기른다.",
+        "identity_keywords": [
+          "이중문화 통합 (Bicultural)",
+          "짜여진 매트 (Whāriki)",
+          "존재의 위엄 (Mana)",
+          "마오리 세계관 (Mātauranga Māori)",
+          "확대가족 (Whānau)",
+          "전인적 발달 (Te Whare Tapa Whā)",
+          "환경 수호자 의식 (Kaitiakitanga)",
+          "대지의 어머니 (Papatūānuku)",
+          "잠정적 자기 이론",
+          "학습 이야기 (Learning Stories)",
+          "상호적 교사관 (Ako)",
+          "지역 맞춤 교육과정 직조",
+          "유능한 학습자",
+          "와이탕이 조약 정신"
+        ],
+        "differentiators": [
+          {
+            "name": "이중문화 통합 교육 (Bicultural Curriculum)",
+            "description": "마오리 원주민 문화와 백인 정착민 문화를 동등하게 엮어내는 세계 최초의 이중문화 유아교육과정. 와이탕이 조약(Treaty of Waitangi) 정신에 기반해 두 문화의 지식 체계가 나란히 작동. 호주의 '원주민 관점 내재화'보다 한 걸음 더 나아가, 교육과정 자체가 두 문화의 직조로 구성됨. 모든 핵심 개념이 마오리어 원어로 명명됨.",
+            "source_quote": "Te Whāriki acknowledges Aotearoa New Zealand as a bicultural nation. (...) The curriculum reflects the partnership between Māori and the Crown that is at the heart of Te Tiriti o Waitangi.",
+            "source_location": "Te Whāriki, Vision and Bicultural Framework"
+          },
+          {
+            "name": "짜여진 매트 (Whāriki) 메타포 - 지역 맞춤 직조",
+            "description": "교육과정 자체가 '매트(돗자리)'라는 메타포로 구성됨. 4개 원리와 5개 영역이 씨실과 날실처럼 엮이고, 각 기관이 자기 지역·공동체·아이들의 특색으로 고유의 매트를 직조. 호주의 'Vision-Principles-Practices-Outcomes' 같은 위계적 구조와 달리, 모든 요소가 동등하게 엮인 비위계적·관계적 구조가 뉴질랜드 고유.",
+            "source_quote": "The metaphor of the woven mat (whāriki) for 'all to stand on' is central to this curriculum. Each early childhood service weaves its own curriculum from the principles, strands, goals and learning outcomes.",
+            "source_location": "Te Whāriki, Curriculum Metaphor"
+          },
+          {
+            "name": "존재의 위엄 (Mana) - 영적 차원의 유아관",
+            "description": "모든 유아가 조상으로부터 물려받은 고유한 영적 위엄(Mana)을 지닌 존재로 봄. 단순한 '유능한 주체' 개념을 넘어 잉태 전부터 신들의 고향에서 영적 여정을 시작한 존재로 자리매김. 영성(spirituality)을 교육의 핵심 차원으로 명시한 점에서 호주의 'Country 영적 연결'과 결을 같이 하면서도, '위엄'이라는 인격적 개념이 뉴질랜드 고유.",
+            "source_quote": "Children come into the world with mana atua (sacred power), inherited from their ancestors. Education must protect and strengthen this inherent dignity and power.",
+            "source_location": "Te Whāriki, Image of the Child"
+          },
+          {
+            "name": "전인적 발달 - 네 벽으로 된 집 (Te Whare Tapa Whā)",
+            "description": "마오리 건강 모델 '네 벽으로 된 집'을 교육에 적용. 신체(Tinana)·정신(Hinengaro)·영혼(Wairua)·가족 사회성(Whānau)의 네 벽이 모두 튼튼해야 집이 서듯, 유아 발달도 네 차원의 통합. 영적 차원이 다른 모든 차원을 연결하는 가장 근본적 차원으로 명시. 이탈리아의 '전인적 형성'과 결을 같이하면서도 마오리 고유의 영성 통합 모델이 차별점.",
+            "source_quote": "Te Whare Tapa Whā provides a holistic model where physical, mental, spiritual and family wellbeing are interwoven and inseparable. The spiritual dimension connects all others.",
+            "source_location": "Te Whāriki, Strand 1: Wellbeing"
+          },
+          {
+            "name": "환경 수호자 의식 (Kaitiakitanga) - 대지와의 영적 유대",
+            "description": "대지를 'Papatūānuku(대지의 어머니)', 하늘을 'Ranginui(하늘 아버지)'로 부르며, 유아는 자연의 일부이자 환경의 수호자(Kaitiaki)로서 책임을 배움. 호주의 'Country' 개념과 유사하면서도, 마오리 신화의 부모-자녀 관계로 자연을 인격화하는 점이 뉴질랜드 고유. 단순 환경교육이 아닌 혈통적·영적 의무로서의 환경 책임.",
+            "source_quote": "Children develop a sense of responsibility as kaitiaki (guardians) of Papatūānuku (Earth Mother), recognising their genealogical and spiritual connection to the natural world.",
+            "source_location": "Te Whāriki, Strand 2: Belonging / Strand 5: Exploration"
+          },
+          {
+            "name": "학습 이야기 (Learning Stories) - 강점 기반 내러티브 평가",
+            "description": "결핍·진단 중심 평가를 거부하고, 유아의 강점과 학습 성향(dispositions)을 서사적으로 기록하는 'Learning Stories' 평가법을 세계 최초로 개발·표준화. 'Ko wai au?(나는 누구인가)' 질문으로 정체성 형성 지원. 이탈리아의 Documentazione, 독일의 Sprachlerntagebuch와 결을 같이하면서도, '이야기' 형식과 강점 기반 접근이 뉴질랜드 고유.",
+            "source_quote": "Learning Stories are narrative assessments that focus on what children can do, their learning dispositions, and the meaningful contexts of their learning, rather than on deficits.",
+            "source_location": "Te Whāriki, Assessment for Learning"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 14,
+      "core_philosophy_chunk_count": 9
+    },
+    {
+      "country": "싱가포르",
+      "country_code": "SGP",
+      "framework_name": "Nurturing Early Learners: A Curriculum Framework for Preschool Education in Singapore (NEL Framework 2022)",
+      "framework_metadata": {
+        "issuing_body": "Ministry of Education (MOE) & Early Childhood Development Agency (ECDA), Republic of Singapore",
+        "regulation_id": "NEL Framework 2022 (ISBN: 978-981-18-5622-8)",
+        "source_pdf": "Nurturing_Early_Learners_2022.pdf (MOE Singapore)",
+        "publication_year": 2022,
+        "language_original": "English",
+        "applicable_age": "만 4세~6세 (Kindergarten 1~2), 출생~3세는 EYDF(ECDA 발행) 병행 적용",
+        "structure": "Beliefs about Children + Values + Social & Emotional Competencies + Learning Dispositions (PRAISE) + iTeach 6 Principles + 5 Learning Areas",
+        "philosophical_basis": "Vygotsky ZPD + Piaget 구성주의 + Singapore Bilingual Policy + 21st Century Competencies Framework (MOE 2021)"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "싱가포르 NEL은 '유아는 기쁨을 느끼고, 호기심이 많으며, 능동적이고 유능한 학습자'라는 믿음에서 출발한다. 다민족·다언어 도시국가 싱가포르의 사회문화적 맥락을 반영하여 영어와 모국어(MTL)의 이중언어 정체성, 가치(Respect·Responsibility·Care·Honesty) 기반 인성 형성, 그리고 PRAISE 학습 성향을 핵심으로 삼는다. 교사는 단순한 지시자가 아닌 'iTeach 6원칙'을 실천하는 퍼실리테이터로서 아동의 근접발달영역(ZPD)을 파악하고 비계 설정을 통해 의미 있는 학습 경험을 설계한다. 평생 학습자 양성을 위한 학습 성향 함양이 지식·기술 습득만큼 중요하게 다루어진다.",
+        "identity_keywords": [
+          "유능한 학습자 (Competent Learner)",
+          "이중언어 정체성 (EL + MTL)",
+          "4대 핵심 가치 (Respect·Responsibility·Care·Honesty)",
+          "PRAISE 학습 성향",
+          "iTeach 6원칙",
+          "근접발달영역 (ZPD) 기반 비계 설정",
+          "목적 있는 놀이 (Purposeful Play)",
+          "지속적 공유 사고 (Sustained Shared Thinking)",
+          "다문화 공동체 시민성",
+          "5개 학습 영역 (Learning Areas)",
+          "학습 주기 4단계 (Awareness-Exploration-Acquisition-Application)",
+          "전인적 발달 (Holistic Development)"
+        ],
+        "differentiators": [
+          {
+            "name": "이중언어 교육의 의무적 통합 (EL + Mother Tongue Language)",
+            "description": "영어(EL)를 공용 교육 언어로 사용하면서 동시에 중국어·말레이어·타밀어 등 모국어(MTL)를 NEL 교육과정에 심층 통합. 단순 외국어 수업이 아닌 문화 정체성 전수와 인지 발달 수단으로 이중언어 교육을 필수 원칙으로 명시. 핀란드·한국·호주 교육과정에는 없는 싱가포르만의 제도적 언어 철학.",
+            "source_quote": "The bilingual policy is a cornerstone of our education system. While EL is the common language of communication in multi-cultural Singapore, the bilingual policy promotes the study of MTL as it plays an important part in affirming a sense of cultural identity among Singaporeans.",
+            "source_location": "Chapter 4 - Language and Literacy, p.47"
+          },
+          {
+            "name": "iTeach 6원칙 기반 교수 설계 체계",
+            "description": "integrated(통합), Teachers as facilitators(교사 역할), engaging through purposeful play(목적 있는 놀이), authentic through quality interactions(질 높은 상호작용), children as constructors(지식 구성자), holistic development(전인 발달)의 영어 첫 글자를 딴 'iTeach' 6원칙이 교사의 계획-설계-촉진을 모두 안내하는 독자적 교수 프레임워크. 한국·핀란드·호주에 없는 싱가포르만의 통합 교수 설계 언어.",
+            "source_quote": "The six iTeach principles guide teachers in planning, designing and facilitating appropriate and meaningful learning experiences for children.",
+            "source_location": "Chapter 5 - iTeach Principles, p.62"
+          },
+          {
+            "name": "PRAISE 학습 성향 (Learning Dispositions) 명시",
+            "description": "Perseverance(끈기)·Reflectiveness(성찰성)·Appreciation(감사)·Inventiveness(창의성)·Sense of wonder & curiosity(경이감)·Engagement(참여)의 6가지 학습 성향을 PRAISE로 명명하고 교육과정에 명시적으로 통합. 지식·기술만큼 성향을 독립적 목표로 삼는 싱가포르만의 접근.",
+            "source_quote": "To foster among children these behaviours and attitudes which promote the joy of lifelong learning, teachers could cultivate the following learning dispositions (PRAISE): Perseverance, Reflectiveness, Appreciation, Inventiveness, Sense of wonder and curiosity, Engagement.",
+            "source_location": "Chapter 3 - Fostering Learning Dispositions, p.33"
+          },
+          {
+            "name": "다민족·다문화 시민성의 의무적 실천",
+            "description": "중국계·말레이계·인도계·기타 민족이 공존하는 싱가포르 특성상 '다양성 존중'을 선언적 가치가 아니라 NEL 전 학습 영역에 실천적으로 통합. 학습 목표에 인종적 조화(Racial Harmony)와 민족 문화 인식을 명시. 단일민족 중심 교육과정과 구별되는 도시국가 특유의 시민성 교육.",
+            "source_quote": "Diversity in ethnicity, culture, age, ability and perspective (...) In our multi-racial, multi-cultural society, a sense of shared values and respect allows us to appreciate and celebrate our diversity, so that we stay cohesive and harmonious.",
+            "source_location": "Chapter 3 - Inculcating Values, p.28 / Chapter 4 - Discovery of the World, p.42"
+          },
+          {
+            "name": "4대 핵심 가치 기반 인성 형성 (Values-first Character Building)",
+            "description": "Respect(존중)·Responsibility(책임)·Care(돌봄)·Honesty(정직)의 4대 가치를 학습 내용보다 앞에 배치하는 '가치 선행 교육과정'. 유아기부터 인성 형성을 교육의 최우선 목표로 명시하며, 이를 일상 루틴·전환 시간·놀이에 일관되게 녹여내도록 교사에게 의무화.",
+            "source_quote": "Values serve as a compass that guides children in their daily interactions and decisions. Children who are guided by a strong set of core values grow up to be citizens of good character who can contribute positively to their family, community and Singapore.",
+            "source_location": "Chapter 3 - Inculcating Values, p.28"
+          },
+          {
+            "name": "지속적 공유 사고 (Sustained Shared Thinking) + ZPD 기반 상호작용",
+            "description": "Vygotsky ZPD에 기반한 교사-유아 간 '지속적 공유 사고(Sustained Shared Thinking)'를 질 높은 상호작용의 핵심 방법으로 명시. 단순 발문을 넘어 인지 발달을 위한 질문-피드백-언어 모델링의 구체적 전략을 교육과정 내에 상세히 제시.",
+            "source_quote": "An episode in which two or more individuals work together in an intellectual way to solve a problem, clarify a concept, evaluate activities, or extend a narrative, etc. Both parties must contribute to the thinking and it must develop and extend understanding.",
+            "source_location": "Chapter 6 - Facilitating Authentic Learning, p.108"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 20,
+      "core_philosophy_chunk_count": 11
+    },
+    {
+      "country": "스웨덴",
+      "country_code": "SWE",
+      "framework_name": "Läroplan för förskolan (Lpfö 18) - 스웨덴 유치원 교육과정",
+      "framework_metadata": {
+        "issuing_body": "Skolverket (스웨덴 국립교육청, Swedish National Agency for Education)",
+        "regulation_id": "Lpfö 18 (2018년 개정판) - 1998년 최초 제정",
+        "source_pdf": "pdf4001.pdf",
+        "publication_year": 2018,
+        "language_original": "Svenska (스웨덴어)",
+        "applicable_age": "1-5세 (Förskola 유치원)",
+        "structure": "기본 가치 + 임무(Uppdrag) + 발달 영역 + 교사 역할 + 평가/협력/전환",
+        "philosophical_basis": "민주주의 가치 + 레지오 에밀리아 영향(제3의 교사) + Vygotsky 사회구성주의(비계 설정) + UN 아동권리협약 + 노르딕 에듀케어 모델"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "스웨덴 Lpfö 18은 민주주의를 '지식'이 아닌 '삶의 방식'으로 경험하게 하는 교육과정이다. 유아를 권리를 가진 시민으로 대우하며 일상에 실질적 영향력을 갖게 하는 것이 출발점이다. 돌봄(Care)과 학습을 통합한 노르딕 에듀케어 모델, 환경·사회·경제 3차원의 지속 가능성, 공간 자체가 가르치는 '제3의 교사' 환경관, 교사를 공동 연구자(co-researcher)로 보는 비계 설정 페다고지가 핵심. 고정된 성 역할 타파, 디지털 시민성 형성, 날씨와 무관한 일상적 야외 교육이 스웨덴 유치원의 색깔을 만든다.",
+        "identity_keywords": [
+          "민주주의는 삶의 방식",
+          "유아의 영향력 (Inflytande)",
+          "에듀케어 (Edu-care)",
+          "지속 가능성 3차원",
+          "제3의 교사 (Tredje pedagogen)",
+          "비계 설정 (Scaffolding)",
+          "공동 연구자로서의 교사",
+          "성평등 (Jämställdhet)",
+          "고정 성역할 타파",
+          "디지털 시민성",
+          "날씨 무관 야외 교육",
+          "100가지 언어",
+          "객관성과 포괄성",
+          "질적 문서화 (Dokumentation)"
+        ],
+        "differentiators": [
+          {
+            "name": "민주주의는 삶의 방식 - 유아의 실질적 영향력(Inflytande)",
+            "description": "민주주의를 미래의 지식이 아닌 지금 여기 일상의 '삶의 방식(way of life)'으로 경험하게 하는 교육과정. 유아는 자신의 일상과 유치원 운영에 실질적 영향을 미칠 권리가 있으며, 의견 표현이 실제 활동 계획에 반영되는 경험을 한다. 독일 BBP의 '민주적 참여(Partizipation)'와 결을 같이하나, 스웨덴은 '민주주의가 곧 삶의 방식'이라는 듀이 철학과 결합된 점이 차별적.",
+            "source_quote": "Förskolan vilar på demokratins grund. Utbildningen ska förmedla och förankra respekt för de mänskliga rättigheterna och de grundläggande demokratiska värderingar som det svenska samhället vilar på.",
+            "source_location": "Lpfö 18, Förskolans värdegrund och uppdrag"
+          },
+          {
+            "name": "통합적 에듀케어 (Edu-care) - 노르딕 모델",
+            "description": "돌봄(Omsorg)과 학습(Lärande)을 분리하지 않는 노르딕 에듀케어 모델. 신체적·정서적 복지가 충족되는 안전한 돌봄의 토대 위에서만 최적의 학습이 일어난다는 통합적 접근. 핀란드의 EduCare와 형제 개념이지만, 스웨덴은 1990년대 사회복지부에서 교육부로 유아교육 소관이 이전되면서 '돌봄+교육' 통합을 더 강하게 명시. 한국·일본의 '보육과 교육 이원화'와는 정반대 접근.",
+            "source_quote": "Utbildningen ska utgå från en helhetssyn på barn och barnens behov, där omsorg, utveckling och lärande bildar en helhet.",
+            "source_location": "Lpfö 18, Förskolans uppdrag"
+          },
+          {
+            "name": "지속 가능성 3차원 - 환경·사회·경제 통합",
+            "description": "유아교육과정에 환경적·사회적·경제적 지속가능성 3차원을 명시. UN SDGs를 유아교육에 직접 적용한 선도적 사례. 호주의 '지속가능성 3차원 + 7Rs', 핀란드의 '지속가능한 삶의 방식'과 공통점이 있으나, 스웨덴은 일상의 재활용·자원 절약 실천을 가장 적극적으로 표준화. 자연과의 공존, 생명 존중을 일상화.",
+            "source_quote": "En positiv framtidstro ska prägla utbildningen. Utbildningen ska ge barnen möjlighet att tillägna sig ett ekologiskt och varsamt förhållningssätt till sin omgivande miljö och till natur och samhälle.",
+            "source_location": "Lpfö 18, Hållbar utveckling samt hälsa och välbefinnande"
+          },
+          {
+            "name": "제3의 교사 (Tredje pedagogen) - 환경의 능동성",
+            "description": "유치원 공간과 도구 자체가 유아를 가르치는 '제3의 교사'라는 레지오 에밀리아 개념을 국가 교육과정에 명시. 환경은 단순 배경이 아니라 능동적 매체이며, 유아의 발달과 관심에 따라 언제든 변화할 수 있는 유연성을 갖춰야 함. 또한 디지털 기술을 아날로그와 결합하여 비판적·창의적으로 활용하는 디지털 시민성도 통합. 이탈리아 아틀리에와 결을 같이하나, 디지털 통합이 차별점.",
+            "source_quote": "Miljön ska vara tillgänglig för alla barn och inspirera dem att samspela och att utforska omvärlden samt stödja barnens utveckling, lärande, lek och kommunikation.",
+            "source_location": "Lpfö 18, Lärmiljö / Digitalisering"
+          },
+          {
+            "name": "비계 설정 + 공동 연구자로서의 교사",
+            "description": "교사를 지식 전달자가 아닌 유아의 탐구 과정을 세밀하게 관찰하고 사고를 확장하는 '공동 연구자(co-researcher)'로 정의. Vygotsky의 비계 설정(Scaffolding)을 명시적 페다고지로 채택. 유아의 가설을 자극하는 질문과 도구 제공이 핵심 실천. 이탈리아 'Regista', 독일 'Bildungsbegleiter', 뉴질랜드 'Ako'와 결을 같이하나, '공동 연구자'라는 평등주의적 개념이 스웨덴 고유.",
+            "source_quote": "Förskollärare ska ansvara för att varje barn får använda digitala verktyg på ett sätt som stimulerar utveckling och lärande, och utmana barnens nyfikenhet och förståelse.",
+            "source_location": "Lpfö 18, Förskollärares ansvar / Pedagogisk roll"
+          },
+          {
+            "name": "성평등(Jämställdhet) - 고정 성역할 타파의 의무",
+            "description": "유치원에 '고정된 성 역할을 타파할 책임'을 명시적으로 부여한 세계적으로 드문 사례. 단순히 '성별 차별 금지'를 넘어, 유아가 성별 기대치에 얽매이지 않고 흥미와 능력을 자유롭게 확장할 수 있도록 환경과 상호작용을 적극 설계할 의무를 교사에게 부여. 다른 5개국이 '포용성'·'다양성 존중' 차원에서 다루는 성평등을, 스웨덴은 별도 가치로 분리하여 강조.",
+            "source_quote": "Förskolan ska aktivt och medvetet främja alla barns lika rättigheter och möjligheter, oberoende av könstillhörighet. Förskolan har ett ansvar för att motverka könsmönster som begränsar barnens utveckling.",
+            "source_location": "Lpfö 18, Jämställdhet"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 20,
+      "core_philosophy_chunk_count": 8
+    },
+    {
+      "country": "영국",
+      "country_code": "GBR",
+      "framework_name": "Statutory framework for the early years foundation stage (EYFS) - 영국 유아교육 법정 기본 단계",
+      "framework_metadata": {
+        "issuing_body": "Department for Education (영국 교육부)",
+        "regulation_id": "EYFS Statutory Framework 2024 (최신 개정판) - 2008년 최초 제정",
+        "source_pdf": "EYFS_statutory_framework.pdf",
+        "publication_year": 2024,
+        "language_original": "English",
+        "applicable_age": "출생 ~ 만 5세 (Reception 학년 종료까지)",
+        "structure": "4대 원칙 + 효과적 학습의 3특징 + 7개 학습영역(Prime 3 + Specific 4) + 17개 ELG 성취기준",
+        "philosophical_basis": "유아의 회복력·유능성 신뢰 + 성취 기준 기반 책무성(accountability) + 사회·정서 발달 토대 강조 + 학교 준비도(School Readiness) 지향"
+      },
+      "core_philosophy": {
+        "philosophy_summary": "영국 EYFS는 7개국 중 가장 '구조화된 책무성 모델'을 가진 교육과정이다. 만 5세 종료 시점에 도달해야 할 17개의 명확한 국가 성취 기준(Early Learning Goals)을 제시하고, 이를 통한 '학교 준비도(School Readiness)'를 최우선 목표로 한다. 4대 원칙(고유한 유아·긍정적 관계·촉진적 환경·학습과 발달)을 토대로, 유아 주도 자유 놀이와 '성인 주도 활동(Adult-led activities)'의 균형을 명시적으로 요구한다. 학습 영역은 3개 기본(Prime)과 4개 구체(Specific)로 위계화되어 있으며, 파닉스 기반 초기 문해력 지도가 다른 나라와 가장 차별되는 지점. 각 유아에게는 '핵심 인물(Key Person)'이 지정되어 깊은 애착과 개별 책임을 담당한다.",
+        "identity_keywords": [
+          "학교 준비도 (School Readiness)",
+          "조기 학습 목표 (ELGs)",
+          "17개 국가 성취 기준",
+          "4대 원칙 (4 Overarching Principles)",
+          "고유한 유아 (Unique Child)",
+          "촉진적 환경 (Enabling Environments)",
+          "놀이-지도 균형",
+          "성인 주도 활동 (Adult-led)",
+          "효과적 학습의 특징 (CoEL)",
+          "기본 영역 + 구체 영역 (Prime + Specific)",
+          "파닉스 기반 문해력",
+          "핵심 인물 (Key Person)",
+          "의도적인 교육자",
+          "EYFS 프로필 총괄평가"
+        ],
+        "differentiators": [
+          {
+            "name": "학교 준비도 (School Readiness) - 명시적 우선 목표",
+            "description": "만 5세 종료 시 초등학교 진학을 위한 학업·사회 기초 역량 확보를 교육과정의 명시적 우선 목표로 삼는 7개국 중 유일한 사례. 핀란드(아동기의 본질적 가치), 한국(현재적 행복권), 뉴질랜드(매트의 풀린 끝-평생학습)와 정반대 철학. 'School Readiness'라는 용어 자체를 EYFS 법정 문서에 명시.",
+            "source_quote": "The EYFS seeks to provide quality and consistency, a secure foundation, partnership working, equality of opportunity. The framework supports an integrated approach to early learning and care, giving all children the broad range of knowledge and skills that provide the right foundation for good future progress through school and life.",
+            "source_location": "EYFS Statutory Framework, Introduction"
+          },
+          {
+            "name": "17개 조기 학습 목표 (Early Learning Goals, ELGs)",
+            "description": "만 5세 Reception 학년 종료 시 달성해야 할 17개의 명확한 국가 성취 기준을 법정 문서에 제시. 호주(5개 Outcomes), 핀란드(횡단적 역량 6영역)도 학습 결과를 제시하지만, 영국은 가장 구체적·측정가능한 형태로 제시하고 'EYFS 프로필' 총괄평가로 도달도를 판정. 책무성(accountability) 기반 평가 모델의 대표 사례.",
+            "source_quote": "The Early Learning Goals (ELGs) define the level of development children should be expected to have attained by the end of the EYFS. The level of development described in the ELGs at the end of the EYFS is considered to be the level expected of children at the end of the academic year in which they turn 5.",
+            "source_location": "EYFS Statutory Framework, Section 1 / Early Learning Goals"
+          },
+          {
+            "name": "놀이와 성인 주도 활동의 명시적 균형",
+            "description": "유아 주도 자유 놀이와 교사 주도 활동(Adult-led activities)의 균형을 법정 문서에 명시한 사례. 한국 누리과정·뉴질랜드 테 와리키 등 '유아 주도 우선' 모델과 차별화. 특히 초등학교 진학이 가까워질수록 성인 주도 비중을 점진적으로 늘리도록 명시. '명확한 학습 목표'를 가진 교사 개입이 정당화됨.",
+            "source_quote": "Each area of learning and development must be implemented through planned, purposeful play and through a mix of adult-led and child-initiated activities. Play is essential for children's development. (...) There is an ongoing judgement to be made by practitioners about the balance between activities led by children, and activities led or guided by adults.",
+            "source_location": "EYFS Statutory Framework, Section 1.8-1.9"
+          },
+          {
+            "name": "Prime + Specific 위계적 학습 영역 구조",
+            "description": "7개 학습 영역을 '3대 기본 영역(Prime: 의사소통·언어, 신체 발달, 개인·사회·정서 발달)'과 '4대 구체 영역(Specific: 문해력, 수학, 세상의 이해, 표현 예술)'으로 위계화. 기본 영역이 모든 후속 학습의 토대라고 명시. 한국(5개 영역 동등), 이탈리아(5개 경험 영역 통합), 핀란드(횡단적 역량)와 다른 위계적 분류 체계.",
+            "source_quote": "Three areas are particularly crucial for igniting children's curiosity and enthusiasm for learning, and for building their capacity to learn, form relationships and thrive. These three areas, the prime areas, are: communication and language; physical development; and personal, social and emotional development.",
+            "source_location": "EYFS Statutory Framework, Section 1.5-1.6"
+          },
+          {
+            "name": "파닉스(Phonics) 기반 명시적 초기 문해력 지도",
+            "description": "Systematic Synthetic Phonics(체계적 합성 파닉스)를 통한 초기 읽기·쓰기 지도를 명시. 5세 이전부터 글자-소리 대응 규칙을 체계적으로 가르치는 영미권 고유 접근. 핀란드(7세 학교 시작까지 명시적 문해 지도 지양)·이탈리아(놀이 중심 언어 발달)와 정반대. 학교 준비도와 직결되는 가장 영국적인 페다고지.",
+            "source_quote": "It is crucial for children to develop a life-long love of reading. Reading consists of two dimensions: language comprehension and word reading. (...) Skilled word reading involves both the speedy working out of the pronunciation of unfamiliar printed words (decoding) and the speedy recognition of familiar printed words.",
+            "source_location": "EYFS Statutory Framework, Literacy / Reading"
+          },
+          {
+            "name": "핵심 인물 (Key Person) - 법정 의무 애착 시스템",
+            "description": "각 유아에게 1명의 '핵심 인물(Key Person)' 교사를 법정 의무로 지정. 그 교사가 해당 유아와 깊은 애착을 형성하고, 가족과의 소통을 전담하며, 개별 발달을 책임짐. 다른 나라들이 '관계 중심 교육'을 가치 차원에서 강조한다면, 영국은 1:1 책임 시스템으로 제도화한 점이 차별적. Bowlby 애착 이론의 정책적 적용.",
+            "source_quote": "Each child must be assigned a key person. Their role is to help ensure that every child's care is tailored to meet their individual needs, to help the child become familiar with the setting, offer a settled relationship for the child and build a relationship with their parents.",
+            "source_location": "EYFS Statutory Framework, Section 3.27 (Safeguarding and welfare)"
+          }
+        ],
+        "weight_boost": 1.5
+      },
+      "chunk_count": 12,
+      "core_philosophy_chunk_count": 8
+    }
+  ]
+}

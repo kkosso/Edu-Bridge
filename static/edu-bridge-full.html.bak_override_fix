@@ -1,0 +1,3024 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDU-bridge — 글로벌 교육안 설계 플랫폼</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --teal: #1D9E75;
+  --teal-2: #9FE1CB;
+  --teal-3: #E1F5EE;
+  --teal-dark: #085041;
+  --teal-mid: #0F6E56;
+  --coral: #D85A30;
+  --coral-2: #F0997B;
+  --coral-3: #FAECE7;
+  --amber: #BA7517;
+  --amber-3: #FAEEDA;
+  --blue: #185FA5;
+  --blue-3: #E6F1FB;
+  --g0: #FAFAF8;
+  --g1: #F4F3EF;
+  --g2: #E8E6DF;
+  --g3: #C8C6BC;
+  --g5: #888780;
+  --g7: #3A3A38;
+  --g9: #141412;
+  --white: #FFFFFF;
+  --font: 'Noto Sans KR', sans-serif;
+  --serif: 'Instrument Serif', Georgia, serif;
+  --r: 12px;
+  --r-lg: 18px;
+  --shadow: 0 2px 16px rgba(0,0,0,0.07);
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--g1);
+  color: var(--g9);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  position: fixed;
+  left: 0; top: 0;
+  width: 240px; height: 100vh;
+  background: var(--g9);
+  display: flex;
+  flex-direction: column;
+  z-index: 200;
+  transition: width 0.25s ease;
+}
+
+.sidebar-logo {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-logo h1 {
+  font-family: var(--font);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--white);
+  letter-spacing: -1px;
+}
+.sidebar-logo h1 span { color: var(--teal-2); }
+.sidebar-logo p {
+  font-size: 11px;
+  color: var(--g5);
+  margin-top: 3px;
+}
+
+.sidebar-price {
+  margin: 16px 16px 0;
+  padding: 10px 14px;
+  background: rgba(29,158,117,0.15);
+  border: 1px solid rgba(29,158,117,0.3);
+  border-radius: var(--r);
+}
+.sidebar-price .price-label { font-size: 11px; color: var(--teal-2); font-weight: 700; }
+.sidebar-price .price-val { font-size: 18px; font-weight: 900; color: var(--white); line-height: 1.2; }
+.sidebar-price .price-sub { font-size: 11px; color: var(--g5); }
+.sidebar-price .price-btn {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 7px;
+  background: var(--teal);
+  border: none;
+  border-radius: 8px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.sidebar-price .price-btn:hover { background: var(--teal-mid); }
+
+.sidebar-nav {
+  flex: 1;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--g5);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 8px 8px 4px;
+  margin-top: 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.6);
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  font-family: var(--font);
+}
+.nav-item:hover { background: rgba(255,255,255,0.07); color: var(--white); }
+.nav-item.active { background: rgba(29,158,117,0.2); color: var(--teal-2); }
+.nav-item .nav-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+}
+.nav-item.active .nav-icon { background: rgba(29,158,117,0.25); }
+
+.sidebar-bottom {
+  padding: 16px 12px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.avatar-circle {
+  width: 34px; height: 34px;
+  border-radius: 50%;
+  background: var(--teal);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: var(--white);
+  flex-shrink: 0;
+}
+.sidebar-bottom .user-name { font-size: 13px; font-weight: 700; color: var(--white); }
+.sidebar-bottom .user-role { font-size: 11px; color: var(--g5); }
+
+/* 사이드바 하단 로그인 버튼 (로그인 전) */
+.sidebar-bottom-login {
+  padding: 14px 16px;
+  border-top: 1px solid rgba(255,255,255,0.08);
+}
+.sidebar-login-btn {
+  width: 100%;
+  padding: 11px 14px;
+  background: var(--teal);
+  border: none;
+  border-radius: 10px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background 0.15s;
+}
+.sidebar-login-btn:hover { background: var(--teal-mid); }
+
+/* ─── MAIN ─── */
+.main-wrap {
+  margin-left: 240px;
+  min-height: 100vh;
+}
+
+/* ─── TOPBAR ─── */
+.topbar {
+  background: var(--white);
+  border-bottom: 1px solid var(--g2);
+  padding: 0 2rem;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.search-wrap {
+  position: relative;
+  flex: 1;
+  max-width: 420px;
+}
+.search-wrap input {
+  width: 100%;
+  height: 38px;
+  background: var(--g1);
+  border: 1px solid var(--g2);
+  border-radius: 40px;
+  padding: 0 1rem 0 2.6rem;
+  font-family: var(--font);
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+  color: var(--g9);
+}
+.search-wrap input:focus { border-color: var(--teal); background: var(--white); }
+.search-icon {
+  position: absolute; left: 12px; top: 50%;
+  transform: translateY(-50%);
+  color: var(--g5);
+  pointer-events: none;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.notif-btn {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--g2);
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 16px;
+  position: relative;
+  transition: border-color 0.15s;
+}
+.notif-btn:hover { border-color: var(--teal); }
+.notif-dot {
+  position: absolute; top: 6px; right: 6px;
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--coral);
+  border: 2px solid var(--white);
+}
+
+/* ─── PAGES ─── */
+.page { display: none; padding: 2rem; }
+.page.active { display: block; }
+
+/* ─── DASHBOARD PAGE ─── */
+.page-title {
+  font-size: 24px; font-weight: 900;
+  color: var(--g9);
+  margin-bottom: 4px;
+}
+.page-sub { font-size: 14px; color: var(--g5); margin-bottom: 1.5rem; }
+
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 1.5rem;
+}
+.stat-card {
+  background: var(--white);
+  border: 1px solid var(--g2);
+  border-radius: var(--r-lg);
+  padding: 1.25rem;
+  position: relative;
+  overflow: hidden;
+}
+.stat-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0;
+  width: 4px; height: 100%;
+}
+.stat-card.teal::before { background: var(--teal); }
+.stat-card.coral::before { background: var(--coral); }
+.stat-card.amber::before { background: var(--amber); }
+.stat-card.blue::before { background: var(--blue); }
+.stat-label { font-size: 12px; color: var(--g5); font-weight: 500; margin-bottom: 6px; }
+.stat-val { font-size: 28px; font-weight: 900; color: var(--g9); line-height: 1; }
+.stat-unit { font-size: 13px; font-weight: 400; color: var(--g5); margin-left: 3px; }
+.stat-trend { font-size: 11px; color: var(--teal); margin-top: 6px; }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+.grid-3 { display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem; }
+
+.card {
+  background: var(--white);
+  border: 1px solid var(--g2);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+}
+.card-head {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+.card-title {
+  font-size: 15px; font-weight: 700; color: var(--g9);
+}
+.card-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.badge-teal { background: var(--teal-3); color: var(--teal-dark); }
+.badge-coral { background: var(--coral-3); color: var(--coral); }
+.badge-amber { background: var(--amber-3); color: var(--amber); }
+
+/* AI Banner */
+.ai-hero {
+  background: var(--g9);
+  border-radius: var(--r-lg);
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+  overflow: hidden;
+}
+.ai-hero::after {
+  content: '';
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 280px; height: 280px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(29,158,117,0.25) 0%, transparent 70%);
+}
+.ai-hero-text h2 {
+  font-family: var(--font);
+  font-size: 24px;
+  font-weight: 600;
+  color: var(--white);
+  line-height: 1.3;
+  margin-bottom: 8px;
+  letter-spacing: -0.5px;
+}
+.ai-hero-text h2 em { font-style: normal; color: var(--teal-2); font-weight: 600; }
+.ai-hero-text p { font-size: 13px; color: var(--g5); }
+.ai-hero-btns { display: flex; gap: 10px; position: relative; z-index: 1; }
+.btn-primary {
+  padding: 10px 20px;
+  background: var(--teal);
+  border: none;
+  border-radius: 10px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-primary:hover { background: var(--teal-mid); }
+.btn-ghost {
+  padding: 10px 20px;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 10px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.18); }
+
+/* Quick actions */
+.quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.quick-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 1.25rem 1rem;
+  background: var(--g0);
+  border: 1.5px solid var(--g2);
+  border-radius: var(--r);
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+}
+.quick-btn:hover { border-color: var(--teal); background: var(--teal-3); transform: translateY(-2px); }
+.quick-btn .q-icon {
+  width: 44px; height: 44px;
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.quick-btn .q-label { font-size: 12px; font-weight: 700; color: var(--g7); text-align: center; }
+.quick-btn .q-sub { font-size: 11px; color: var(--g5); text-align: center; }
+
+/* 2열 큰 버전 (사진+주제 합친 + AI알림장) */
+.quick-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+.quick-btn-large {
+  padding: 2rem 1.5rem;
+  gap: 14px;
+}
+.quick-btn-large .q-icon {
+  width: 64px; height: 64px;
+  border-radius: 16px;
+  font-size: 28px;
+}
+.quick-btn-large .q-label { font-size: 17px; }
+.quick-btn-large .q-sub { font-size: 12px; }
+
+/* Hero 영역 큰 버튼 */
+.btn-hero {
+  padding: 14px 28px !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  border-radius: 12px !important;
+}
+
+/* Notice list */
+.notice-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.notice-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 12px;
+  background: var(--g0);
+  border-radius: var(--r);
+  border: 1px solid var(--g2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.notice-item:hover { border-color: var(--teal); }
+.notice-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); flex-shrink: 0; margin-top: 4px; }
+.notice-item .n-text { color: var(--g7); flex: 1; }
+.notice-item .n-date { font-size: 11px; color: var(--g5); white-space: nowrap; }
+
+/* Community */
+.comm-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.comm-item {
+  padding: 10px 12px;
+  border-radius: var(--r);
+  border: 1px solid var(--g2);
+  background: var(--g0);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.comm-item:hover { border-color: var(--coral-2); background: var(--coral-3); }
+.comm-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; }
+.comm-tag {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 8px; border-radius: 20px;
+}
+.comm-tag.q { background: var(--blue-3); color: var(--blue); }
+.comm-tag.r { background: var(--coral-3); color: var(--coral); }
+.comm-tag.t { background: var(--teal-3); color: var(--teal-dark); }
+.comm-title { font-size: 13px; color: var(--g9); font-weight: 500; }
+.comm-like { font-size: 11px; color: var(--g5); margin-top: 4px; }
+
+/* Calendar mini */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.cal-hd { text-align: center; font-size: 11px; font-weight: 700; color: var(--g5); padding: 4px 0; }
+.cal-d {
+  text-align: center;
+  font-size: 12px;
+  padding: 6px 2px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.1s;
+  color: var(--g7);
+}
+.cal-d:hover { background: var(--teal-3); color: var(--teal-dark); }
+.cal-d.today { background: var(--teal); color: var(--white); font-weight: 700; border-radius: 50%; }
+.cal-d.empty { opacity: 0; pointer-events: none; }
+.cal-d.has-event { position: relative; }
+.cal-d.has-event::after { content: ''; position: absolute; bottom: 2px; left: 50%; transform: translateX(-50%); width: 4px; height: 4px; border-radius: 50%; background: var(--coral); }
+.cal-month-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.cal-month-title { font-size: 16px; font-weight: 700; color: var(--g9); }
+.cal-arrow { background: none; border: none; cursor: pointer; color: var(--g5); font-size: 16px; padding: 4px 8px; border-radius: 6px; }
+.cal-arrow:hover { background: var(--g1); color: var(--g9); }
+
+/* ─── PLAY SCANNER PAGE ─── */
+.upload-zone {
+  border: 2px dashed var(--g3);
+  border-radius: var(--r-lg);
+  padding: 3rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--white);
+  margin-bottom: 1.5rem;
+  position: relative;
+}
+.upload-zone:hover, .upload-zone.dragover { border-color: var(--teal); background: var(--teal-3); }
+.upload-zone input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.upload-icon { font-size: 48px; margin-bottom: 12px; }
+.upload-title { font-size: 18px; font-weight: 700; color: var(--g9); margin-bottom: 6px; }
+.upload-sub { font-size: 13px; color: var(--g5); }
+.upload-sub span { color: var(--teal); font-weight: 700; cursor: pointer; }
+
+.or-divider {
+  display: flex; align-items: center; gap: 12px;
+  margin-bottom: 1.5rem; color: var(--g5); font-size: 13px;
+}
+.or-divider::before, .or-divider::after {
+  content: ''; flex: 1;
+  height: 1px; background: var(--g2);
+}
+
+.topic-input-wrap { display: flex; gap: 10px; margin-bottom: 1.5rem; }
+.topic-input {
+  flex: 1;
+  height: 48px;
+  background: var(--white);
+  border: 1.5px solid var(--g2);
+  border-radius: var(--r);
+  padding: 0 1rem;
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+  color: var(--g9);
+}
+.topic-input:focus { border-color: var(--teal); }
+.btn-scan {
+  height: 48px;
+  padding: 0 24px;
+  background: var(--teal);
+  border: none;
+  border-radius: var(--r);
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 14px; font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+  display: flex; align-items: center; gap: 8px;
+  white-space: nowrap;
+}
+.btn-scan:hover { background: var(--teal-mid); }
+.btn-scan.loading { pointer-events: none; opacity: 0.7; }
+
+/* Detection result */
+.detection-box {
+  background: var(--g9);
+  border-radius: var(--r-lg);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+  display: none;
+}
+.detection-box.show { display: block; }
+.detection-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.det-label { font-size: 12px; color: var(--teal-2); font-weight: 700; margin-bottom: 8px; }
+.det-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 12px;
+  background: rgba(29,158,117,0.2);
+  border: 1px solid rgba(29,158,117,0.3);
+  border-radius: 20px;
+  font-size: 12px;
+  color: var(--white);
+  font-weight: 500;
+}
+.det-chip .conf { font-size: 10px; color: var(--teal-2); }
+
+/* Philosophy cards */
+.philosophy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+.philo-card {
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.philo-card:hover { transform: translateY(-3px); box-shadow: var(--shadow); }
+.philo-card.selected { border-color: var(--teal); }
+.philo-card.nuri { background: var(--teal-3); }
+.philo-card.reggio { background: #FFF8F0; }
+.philo-card.waldorf { background: #F3F0FF; }
+.philo-flag { font-size: 22px; margin-bottom: 10px; }
+.philo-name { font-size: 12px; font-weight: 700; color: var(--g5); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.philo-title { font-size: 15px; font-weight: 900; color: var(--g9); margin-bottom: 10px; }
+.philo-desc { font-size: 13px; color: var(--g7); line-height: 1.7; }
+.philo-tag {
+  display: inline-block;
+  margin-top: 10px;
+  font-size: 11px; font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+.philo-card.nuri .philo-tag { background: var(--teal); color: var(--white); }
+.philo-card.reggio .philo-tag { background: var(--coral); color: var(--white); }
+.philo-card.waldorf .philo-tag { background: #7C6FCA; color: var(--white); }
+.philo-select-badge {
+  position: absolute; top: 12px; right: 12px;
+  width: 22px; height: 22px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: var(--white);
+  font-size: 12px;
+  display: none; align-items: center; justify-content: center;
+}
+.philo-card.selected .philo-select-badge { display: flex; }
+
+/* Output area */
+.output-area {
+  background: var(--white);
+  border: 1px solid var(--g2);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+  display: none;
+}
+.output-area.show { display: block; }
+.output-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+.output-title { font-size: 16px; font-weight: 900; color: var(--g9); }
+.output-actions { display: flex; gap: 8px; }
+.btn-copy, .btn-edit {
+  height: 32px; padding: 0 14px;
+  border-radius: 8px;
+  font-family: var(--font);
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.btn-copy { background: var(--g1); border: 1px solid var(--g2); color: var(--g7); }
+.btn-copy:hover { border-color: var(--teal); color: var(--teal); }
+.btn-edit { background: var(--teal); border: none; color: var(--white); }
+.btn-edit:hover { background: var(--teal-mid); }
+
+.output-section { margin-bottom: 1.25rem; }
+.output-section h4 {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.5px; color: var(--g5);
+  margin-bottom: 6px;
+}
+.output-section p { font-size: 14px; color: var(--g7); line-height: 1.8; }
+.output-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.output-table th { background: var(--g1); padding: 8px 12px; text-align: left; font-weight: 700; color: var(--g7); border-bottom: 1px solid var(--g2); }
+.output-table td { padding: 10px 12px; border-bottom: 1px solid var(--g2); color: var(--g9); line-height: 1.6; }
+.output-table tr:last-child td { border-bottom: none; }
+
+/* Resource cards */
+.resource-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+.resource-chip {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 12px;
+  background: var(--g0);
+  border: 1px solid var(--g2);
+  border-radius: var(--r);
+  font-size: 12px; font-weight: 500;
+  color: var(--g7);
+}
+.resource-chip .r-icon { font-size: 18px; }
+
+/* ─── AI KIDS-NOTE PAGE ─── */
+.kids-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.kids-upload {
+  border: 2px dashed var(--g3);
+  border-radius: var(--r-lg);
+  padding: 2.5rem;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--white);
+  margin-bottom: 1rem;
+  position: relative;
+}
+.kids-upload:hover { border-color: var(--coral); background: var(--coral-3); }
+.kids-upload input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+
+.kids-img-preview {
+  width: 100%; border-radius: var(--r); margin-bottom: 1rem;
+  display: none; max-height: 220px; object-fit: cover;
+}
+.kids-img-preview.show { display: block; }
+
+.vlm-output {
+  background: var(--g0);
+  border: 1px solid var(--g2);
+  border-radius: var(--r);
+  padding: 14px;
+  font-size: 13px; color: var(--g7); line-height: 1.8;
+  margin-bottom: 1rem;
+  min-height: 80px;
+  display: none;
+}
+.vlm-output.show { display: block; }
+.vlm-label { font-size: 11px; font-weight: 700; color: var(--g5); margin-bottom: 6px; }
+
+.tone-selector { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1rem; }
+.tone-chip {
+  padding: 6px 14px;
+  border: 1.5px solid var(--g2);
+  border-radius: 20px;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: var(--font);
+  background: var(--white);
+  color: var(--g7);
+}
+.tone-chip:hover { border-color: var(--teal); color: var(--teal); }
+.tone-chip.active { background: var(--teal); border-color: var(--teal); color: var(--white); }
+
+.note-output {
+  background: var(--white);
+  border: 1.5px solid var(--teal-2);
+  border-radius: var(--r-lg);
+  padding: 1.5rem;
+  min-height: 200px;
+  position: relative;
+}
+.note-output-inner { font-size: 14px; line-height: 1.9; color: var(--g9); }
+.note-output-inner.empty { color: var(--g3); font-style: italic; }
+.note-char-count { font-size: 11px; color: var(--g5); margin-top: 8px; text-align: right; }
+.note-actions { display: flex; gap: 8px; margin-top: 12px; }
+.btn-regen {
+  flex: 1; height: 40px;
+  border: 1.5px solid var(--g2);
+  border-radius: var(--r);
+  background: var(--white);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; color: var(--g7);
+  transition: all 0.15s;
+}
+.btn-regen:hover { border-color: var(--teal); color: var(--teal); }
+.btn-send {
+  flex: 1; height: 40px;
+  border: none;
+  border-radius: var(--r);
+  background: var(--g9);
+  font-family: var(--font);
+  font-size: 13px; font-weight: 700;
+  cursor: pointer; color: var(--white);
+  transition: background 0.15s;
+}
+.btn-send:hover { background: var(--g7); }
+
+/* ─── ACTIVITY LOG PAGE ─── */
+.log-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.log-item {
+  background: var(--white);
+  border: 1px solid var(--g2);
+  border-radius: var(--r-lg);
+  padding: 1.25rem 1.5rem;
+  display: flex; align-items: center; gap: 1.25rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.log-item:hover { border-color: var(--teal); transform: translateX(4px); }
+.log-thumb {
+  width: 60px; height: 60px; border-radius: 10px;
+  background: var(--g1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+}
+.log-content { flex: 1; }
+.log-title { font-size: 14px; font-weight: 700; color: var(--g9); margin-bottom: 3px; }
+.log-meta { font-size: 12px; color: var(--g5); }
+.log-badges { display: flex; gap: 6px; margin-top: 6px; }
+.log-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 9px; border-radius: 20px;
+}
+.log-right { text-align: right; }
+.log-date { font-size: 12px; color: var(--g5); }
+.log-actions { display: flex; gap: 6px; margin-top: 8px; justify-content: flex-end; }
+.log-action-btn {
+  height: 28px; padding: 0 12px;
+  border-radius: 7px;
+  font-family: var(--font);
+  font-size: 11px; font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+/* ─── LOADING SPINNER ─── */
+.spinner {
+  width: 20px; height: 20px;
+  border: 2.5px solid rgba(255,255,255,0.3);
+  border-top-color: var(--white);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: none;
+}
+.spinner.show { display: block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ─── STEP INDICATOR ─── */
+.step-bar {
+  display: flex; align-items: center; gap: 0;
+  margin-bottom: 2rem;
+}
+.step {
+  display: flex; align-items: center;
+}
+.step-dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: 2px solid var(--g2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: var(--g5);
+  background: var(--white);
+  transition: all 0.2s;
+  z-index: 1;
+}
+.step.done .step-dot { background: var(--teal); border-color: var(--teal); color: var(--white); }
+.step.active .step-dot { background: var(--g9); border-color: var(--g9); color: var(--white); }
+.step-label { font-size: 11px; color: var(--g5); margin-left: 8px; margin-right: 8px; white-space: nowrap; }
+.step.active .step-label { color: var(--g9); font-weight: 700; }
+.step.done .step-label { color: var(--teal); }
+.step-line { flex: 1; height: 2px; background: var(--g2); min-width: 24px; }
+.step-line.done { background: var(--teal); }
+
+/* typing animation */
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.cursor { animation: blink 1s infinite; }
+
+/* fade in */
+@keyframes fadeUp { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+.fade-up { animation: fadeUp 0.35s ease both; }
+.delay-1 { animation-delay: 0.05s; }
+.delay-2 { animation-delay: 0.1s; }
+.delay-3 { animation-delay: 0.15s; }
+
+/* parenting banner */
+.parenting-strip {
+  background: var(--white);
+  border: 2px dashed var(--teal-2);
+  border-radius: var(--r-lg);
+  padding: 1.25rem 1.75rem;
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 1.5rem;
+}
+
+/* Keyword chips for philosophy cards */
+.kw-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+.kw-chip {
+  display: inline-block;
+  padding: 4px 10px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--g7);
+  white-space: nowrap;
+}
+.philo-card.nuri .kw-chip { background: rgba(29,158,117,0.12); border-color: rgba(29,158,117,0.25); color: var(--teal-dark); }
+.philo-card.reggio .kw-chip { background: rgba(216,90,48,0.1); border-color: rgba(216,90,48,0.2); color: var(--coral); }
+.philo-card.waldorf .kw-chip { background: rgba(124,111,202,0.12); border-color: rgba(124,111,202,0.25); color: #5A4FA8; }
+
+/* Rotation bar (다른 추천 보기) */
+.rotation-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--white);
+  border: 1px solid var(--g2);
+  border-radius: var(--r-lg);
+  padding: 12px 18px;
+  margin-bottom: 14px;
+}
+.rotation-info {
+  font-size: 13px;
+  color: var(--g7);
+}
+.rotation-info strong {
+  color: var(--teal);
+  font-weight: 700;
+}
+.btn-rotation {
+  background: var(--teal-3);
+  border: 1px solid var(--teal);
+  color: var(--teal-dark);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: var(--font);
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.btn-rotation:hover { background: var(--teal); color: var(--white); }
+.btn-rotation:disabled {
+  background: var(--g1); border-color: var(--g2); color: var(--g5);
+  cursor: not-allowed;
+}
+.btn-rotation.loading { opacity: 0.6; pointer-events: none; }
+
+/* Lesson plan markdown rendering */
+.lesson-md h1 {
+  font-family: var(--serif);
+  font-size: 28px;
+  color: var(--g9);
+  margin-bottom: 0.5rem;
+  border-bottom: 2px solid var(--teal-3);
+  padding-bottom: 8px;
+}
+.lesson-md h2 {
+  font-family: var(--serif);
+  font-size: 22px;
+  color: var(--g9);
+  margin-top: 1.8rem;
+  margin-bottom: 0.6rem;
+  padding-bottom: 6px;
+  border-bottom: 2px solid var(--teal-3);
+}
+.lesson-md h3 {
+  font-size: 16px;
+  color: var(--teal-dark);
+  margin-top: 1.2rem;
+  margin-bottom: 0.4rem;
+  font-weight: 700;
+}
+.lesson-md h4 {
+  font-size: 13px;
+  color: var(--g5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+}
+.lesson-md p, .lesson-md li {
+  font-size: 14px;
+  color: var(--g7);
+  line-height: 1.85;
+  margin-bottom: 0.6rem;
+}
+.lesson-md ul, .lesson-md ol { padding-left: 1.5rem; margin-bottom: 0.8rem; }
+.lesson-md strong { color: var(--g9); font-weight: 700; }
+.lesson-md blockquote {
+  border-left: 3px solid var(--teal);
+  padding: 0.6rem 1rem;
+  background: var(--teal-3);
+  border-radius: 0 var(--r) var(--r) 0;
+  color: var(--g7);
+  font-size: 13px;
+  margin: 1rem 0;
+}
+.lesson-md code {
+  background: var(--g1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+}
+.lesson-md hr {
+  border: 0;
+  border-top: 1px solid var(--g2);
+  margin: 1.5rem 0;
+}
+.parenting-strip .duck { font-size: 28px; }
+.parenting-strip .p-title { font-size: 16px; font-weight: 900; color: var(--teal-dark); }
+.parenting-strip .p-sub { font-size: 13px; color: var(--g5); }
+.parenting-strip .p-btn {
+  margin-left: auto;
+  padding: 8px 18px;
+  background: var(--teal-dark);
+  border: none;
+  border-radius: 8px;
+  color: var(--white);
+  font-family: var(--font);
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+}
+
+/* modal overlay */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+  display: none;
+  align-items: center; justify-content: center;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 2rem;
+  max-width: 480px; width: 92%;
+  animation: fadeUp 0.25s ease;
+}
+.modal-title { font-size: 18px; font-weight: 900; margin-bottom: 8px; }
+.modal-sub { font-size: 13px; color: var(--g5); margin-bottom: 1.5rem; }
+.login-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 1.25rem; }
+.login-fields input {
+  height: 44px;
+  border: 1.5px solid var(--g2);
+  border-radius: var(--r);
+  padding: 0 1rem;
+  font-family: var(--font);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.login-fields input:focus { border-color: var(--teal); }
+.btn-modal-primary {
+  width: 100%; height: 44px;
+  background: var(--teal);
+  border: none; border-radius: var(--r);
+  color: var(--white); font-family: var(--font);
+  font-size: 14px; font-weight: 700; cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-modal-primary:hover { background: var(--teal-mid); }
+.modal-close {
+  float: right; background: none; border: none;
+  font-size: 20px; cursor: pointer; color: var(--g5);
+}
+
+/* responsive */
+@media(max-width: 900px) {
+  .sidebar { width: 60px; }
+  .sidebar-logo, .sidebar-price, .nav-item span, .nav-section-label, .sidebar-bottom .user-name, .sidebar-bottom .user-role { display: none; }
+  .main-wrap { margin-left: 60px; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .philosophy-grid, .kids-layout { grid-template-columns: 1fr; }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h1>EDU<span>-bridge</span></h1>
+    <p>글로벌 교육안 설계 플랫폼</p>
+  </div>
+  <div class="sidebar-price">
+    <div class="price-label">무제한 플랜</div>
+    <div class="price-val">2,990<span style="font-size:13px;font-weight:400;color:var(--g5)">원/월</span></div>
+    <div class="price-sub">지금 바로 시작하세요</div>
+    <button class="price-btn" onclick="showModal()">바로가기 →</button>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-section-label">대시보드</div>
+    <button class="nav-item active" onclick="showPage('dashboard', this)">
+      <span class="nav-icon">🏠</span><span>홈 대시보드</span>
+    </button>
+    <div class="nav-section-label">AI 기능</div>
+    <button class="nav-item" onclick="showPage('scanner', this)">
+      <span class="nav-icon">📷</span><span>Play-Scanner</span>
+    </button>
+    <button class="nav-item" onclick="showPage('kidsnote', this)">
+      <span class="nav-icon">✉️</span><span>AI 알림장</span>
+    </button>
+    <div class="nav-section-label">관리</div>
+    <button class="nav-item" onclick="showPage('activitylog', this)">
+      <span class="nav-icon">📋</span><span>내 지도안</span>
+    </button>
+    <button class="nav-item" onclick="showPage('templates', this)">
+      <span class="nav-icon">📄</span><span>내 양식</span>
+    </button>
+    <div class="nav-section-label">소통</div>
+    <button class="nav-item" onclick="showPage('community', this)">
+      <span class="nav-icon">💬</span><span>커뮤니티</span>
+    </button>
+    <button class="nav-item" onclick="showPage('notice', this)">
+      <span class="nav-icon">📢</span><span>공지사항</span>
+    </button>
+  </nav>
+  <div class="sidebar-bottom-login" id="sidebar-login-btn">
+    <button class="sidebar-login-btn" onclick="showModal()">
+      <span style="font-size:14px;">👤</span>
+      <span>로그인 / 회원가입</span>
+    </button>
+  </div>
+  <div class="sidebar-bottom" id="sidebar-profile" style="display:none;">
+    <div class="avatar-circle">김</div>
+    <div>
+      <div class="user-name">김선생님</div>
+      <div class="user-role">유치원 교사</div>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-wrap">
+  <!-- TOPBAR -->
+  <header class="topbar">
+    <div class="search-wrap">
+      <svg class="search-icon" width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7" cy="7" r="5"/><line x1="11" y1="11" x2="14.5" y2="14.5"/></svg>
+      <input type="text" placeholder="지도안, 알림장, 교육 철학 검색...">
+    </div>
+    <div class="topbar-right">
+      <button class="notif-btn" id="notif-btn" title="알림" style="display:none;">
+        🔔
+        <span class="notif-dot"></span>
+      </button>
+      <span id="login-btn-area">
+        <button class="btn-primary" onclick="showModal()">로그인 / 회원가입</button>
+      </span>
+    </div>
+  </header>
+
+  <!-- ════ DASHBOARD PAGE ════ -->
+  <div class="page active" id="page-dashboard">
+    <div style="padding: 2rem;">
+      <div class="fade-up" id="greeting-block" style="display:none;">
+        <div class="page-title">안녕하세요, 김선생님 👋</div>
+        <div class="page-sub">오늘도 아이들과 함께하는 특별한 하루를 만들어보세요.</div>
+      </div>
+
+      <!-- AI Hero (최상단으로) -->
+      <div class="ai-hero fade-up" style="margin-bottom:1.5rem;">
+        <div class="ai-hero-text">
+          <h2><em>전국 교사 완벽 맞춤 AI</em></h2>
+          <p>총 10개국 교육과정 기반의 글로벌 교육철학</p>
+        </div>
+        <div class="ai-hero-btns">
+          <button class="btn-primary btn-hero" onclick="showPage('scanner', document.querySelector('.nav-item:nth-child(3)'))">📷 Play-Scanner</button>
+          <button class="btn-ghost btn-hero" onclick="showPage('kidsnote', document.querySelector('.nav-item:nth-child(4)'))">✉️ AI 알림장</button>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="card fade-up delay-1" style="margin-bottom:1.5rem;">
+        <div class="card-head">
+          <div class="card-title">빠른 시작</div>
+        </div>
+        <div class="quick-grid quick-grid-2">
+          <button class="quick-btn quick-btn-large" onclick="showPage('scanner', document.querySelector('.nav-item:nth-child(3)'))">
+            <div class="q-icon" style="background:var(--teal-3)">📷</div>
+            <div class="q-label">사진 / 주제로 지도안 생성</div>
+            <div class="q-sub">Play-Scanner · LLM + RAG</div>
+          </button>
+          <button class="quick-btn quick-btn-large" onclick="showPage('kidsnote', document.querySelector('.nav-item:nth-child(4)'))">
+            <div class="q-icon" style="background:var(--coral-3)">✉️</div>
+            <div class="q-label">AI 알림장 생성</div>
+            <div class="q-sub">Kids-Note</div>
+          </button>
+        </div>
+      </div>
+
+      <!-- (통계 4개 카드 / 기존 빠른시작 / AI 파이프라인 라벨 제거됨) -->
+
+      <!-- (육아 세트 박스 제거) -->
+
+      <div class="grid-3 fade-up delay-3">
+        <!-- Community -->
+        <div class="card">
+          <div class="card-head">
+            <div class="card-title">커뮤니티</div>
+            <span class="card-badge badge-coral">실시간</span>
+          </div>
+          <ul class="comm-list">
+            <li class="comm-item">
+              <div class="comm-meta">
+                <span class="comm-tag q">질문</span>
+                <span style="font-size:11px;color:var(--g5)">오늘 · 김○○</span>
+              </div>
+              <div class="comm-title">아이들이 밥을 안 먹어요 ㅠㅠ</div>
+              <div class="comm-like">👍 12 · 댓글 5</div>
+            </li>
+            <li class="comm-item">
+              <div class="comm-meta">
+                <span class="comm-tag r">요청</span>
+                <span style="font-size:11px;color:var(--g5)">어제 · 이○○</span>
+              </div>
+              <div class="comm-title">수업 자료 공유 부탁드려요</div>
+              <div class="comm-like">👍 8 · 댓글 3</div>
+            </li>
+            <li class="comm-item">
+              <div class="comm-meta">
+                <span class="comm-tag t">공유</span>
+                <span style="font-size:11px;color:var(--g5)">2일 전 · 박○○</span>
+              </div>
+              <div class="comm-title">레지오 방식 자연탐구 지도안 공유</div>
+              <div class="comm-like">👍 31 · 댓글 14</div>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Calendar + Notices -->
+        <div style="display:flex;flex-direction:column;gap:1.5rem;">
+          <div class="card">
+            <div class="cal-month-row">
+              <div class="cal-month-title">2026년 6월</div>
+              <div>
+                <button class="cal-arrow">‹</button>
+                <button class="cal-arrow">›</button>
+              </div>
+            </div>
+            <div class="cal-grid">
+              <div class="cal-hd">일</div><div class="cal-hd">월</div><div class="cal-hd">화</div>
+              <div class="cal-hd">수</div><div class="cal-hd">목</div><div class="cal-hd">금</div><div class="cal-hd">토</div>
+              <div class="cal-d empty"></div>
+              <div class="cal-d">1</div><div class="cal-d">2</div><div class="cal-d has-event">3</div><div class="cal-d">4</div><div class="cal-d">5</div><div class="cal-d">6</div>
+              <div class="cal-d today">7</div><div class="cal-d">8</div><div class="cal-d">9</div><div class="cal-d has-event">10</div><div class="cal-d">11</div><div class="cal-d">12</div><div class="cal-d">13</div>
+              <div class="cal-d">14</div><div class="cal-d">15</div><div class="cal-d">16</div><div class="cal-d has-event">17</div><div class="cal-d">18</div><div class="cal-d">19</div><div class="cal-d">20</div>
+              <div class="cal-d">21</div><div class="cal-d">22</div><div class="cal-d">23</div><div class="cal-d">24</div><div class="cal-d">25</div><div class="cal-d">26</div><div class="cal-d">27</div>
+              <div class="cal-d">28</div><div class="cal-d">29</div><div class="cal-d">30</div><div class="cal-d empty"></div><div class="cal-d empty"></div><div class="cal-d empty"></div><div class="cal-d empty"></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-head"><div class="card-title">공지사항</div></div>
+            <ul class="notice-list">
+              <li class="notice-item"><span class="notice-dot"></span><span class="n-text">6월달 주요 일정 안내</span><span class="n-date">06.01</span></li>
+              <li class="notice-item"><span class="notice-dot"></span><span class="n-text">Edu-bridge 업데이트 내역</span><span class="n-date">05.28</span></li>
+              <li class="notice-item"><span class="notice-dot" style="background:var(--coral)"></span><span class="n-text">서버 점검 예정 (06.20)</span><span class="n-date">05.25</span></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ PLAY SCANNER PAGE ════ -->
+  <div class="page" id="page-scanner">
+    <div style="padding:2rem;">
+      <div class="page-title">📷 Play-Scanner</div>
+      <div class="page-sub">사진 또는 활동 아이디어를 입력하면, 10개국 유아교육과정에서 가장 잘 맞는 3가지 수업 방식을 추천해드립니다</div>
+
+      <!-- Step bar -->
+      <div class="step-bar" id="stepBar">
+        <div class="step active" id="step1"><div class="step-dot">1</div><div class="step-label">입력</div></div>
+        <div class="step-line" id="line1"></div>
+        <div class="step" id="step2"><div class="step-dot">2</div><div class="step-label">인식</div></div>
+        <div class="step-line" id="line2"></div>
+        <div class="step" id="step3"><div class="step-dot">3</div><div class="step-label">철학 매칭</div></div>
+        <div class="step-line" id="line3"></div>
+        <div class="step" id="step4"><div class="step-dot">4</div><div class="step-label">지도안 생성</div></div>
+      </div>
+
+      <!-- Upload zone -->
+      <div class="upload-zone" id="uploadZone" ondragover="this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')">
+        <input type="file" accept="image/*" id="scanFile" onchange="handleImageUpload(event)">
+        <div class="upload-icon">📷</div>
+        <div class="upload-title">교구 사진을 업로드하세요</div>
+        <div class="upload-sub">드래그 앤 드롭 또는 <span>파일 선택</span></div>
+        <div style="font-size:12px;color:var(--g5);margin-top:8px;">Gemini 멀티모달 인식 · 텍스트 입력만으로도 가능</div>
+      </div>
+
+      <!-- Preview -->
+      <img id="uploadedImg" class="kids-img-preview" style="max-height:240px;width:100%;object-fit:cover;border-radius:var(--r-lg);margin-bottom:1rem;display:none;" />
+
+      <div class="or-divider">또는</div>
+
+      <!-- Topic input -->
+      <div class="topic-input-wrap">
+        <input class="topic-input" id="topicInput" type="text" placeholder="주제를 직접 입력 (예: 종이컵, 블록 쌓기, 색깔 물감)">
+      </div>
+
+      <!-- Age/Duration controls + Submit -->
+      <div style="display:flex; gap:12px; align-items:flex-end; margin-bottom:1.5rem; flex-wrap:wrap;">
+        <div style="flex:0 0 140px;">
+          <div style="font-size:11px;color:var(--g5);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">대상 연령</div>
+          <select id="ageInput" class="topic-input" style="height:42px;padding:0 12px;cursor:pointer;">
+            <option value="3">만 3세</option>
+            <option value="4" selected>만 4세</option>
+            <option value="5">만 5세</option>
+          </select>
+        </div>
+        <div style="flex:0 0 140px;">
+          <div style="font-size:11px;color:var(--g5);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;">활동 시간</div>
+          <select id="durationInput" class="topic-input" style="height:42px;padding:0 12px;cursor:pointer;">
+            <option value="20">20분</option>
+            <option value="30">30분</option>
+            <option value="40" selected>40분</option>
+            <option value="50">50분</option>
+            <option value="60">60분</option>
+          </select>
+        </div>
+        <button class="btn-scan" id="scanBtn" onclick="runScan()" style="margin-left:auto;height:42px;">
+          <span id="scanBtnText">✨ 글로벌 교육 철학 매칭 시작</span>
+          <div class="spinner" id="scanSpinner"></div>
+        </button>
+      </div>
+
+      <!-- Detection result -->
+      <div class="detection-box" id="detectionBox">
+        <div class="det-label">📡 비전 인식 결과 (YOLOv8 시뮬레이션)</div>
+        <div class="detection-row" id="detectionRow"></div>
+      </div>
+
+      <!-- Philosophy cards -->
+      <div id="philosophySection" style="display:none;">
+        <div class="card-head" style="margin-bottom:1rem;">
+          <div class="card-title" style="font-size:17px;">🌍 글로벌 교육 철학 3-Way 매칭 <span style="font-size:12px;font-weight:400;color:var(--g5)">(RAG 기반)</span></div>
+        </div>
+
+        <!-- Rotation bar -->
+        <div class="rotation-bar" id="rotationBar">
+          <div class="rotation-info">
+            현재 추천: <strong id="rotationLabel">상위 1~3순위</strong>
+            <span style="color:var(--g5); font-size:12px; margin-left:8px;">총 <span id="rotationPoolSize">10</span>개국 중</span>
+          </div>
+          <button class="btn-rotation" id="rotationBtn" onclick="rotateCards()">
+            <span id="rotationBtnText">🔄 다른 국가 추천 보기</span>
+          </button>
+        </div>
+
+        <div class="philosophy-grid" id="philosophyGrid"></div>
+      </div>
+
+      <!-- Output -->
+      <div class="output-area" id="outputArea">
+        <div class="output-head">
+          <div class="output-title" id="outputTitle">지도안 생성 결과</div>
+          <div class="output-actions">
+            <select id="exportTplSelect" style="height:32px;padding:0 10px;border:1px solid var(--g2);border-radius:var(--r);font-family:var(--font);font-size:12px;background:var(--white);color:var(--g7);outline:none;">
+              <option value="">기본 양식</option>
+            </select>
+            <select id="exportTplSelect" style="height:32px;padding:0 10px;border:1px solid var(--g2);border-radius:var(--r);font-family:var(--font);font-size:12px;background:var(--white);color:var(--g7);outline:none;">
+              <option value="">기본 양식</option>
+            </select>
+            <button class="btn-copy" onclick="copyOutput()">📋 복사</button>
+            <button class="btn-edit" onclick="downloadLessonPlan()" title="Markdown 다운로드">📥 .md</button>
+            <button class="btn-edit" onclick="downloadAsDocx()" title="Word 다운로드">📄 .docx</button>
+            <button class="btn-edit" id="btnSaveLesson" onclick="saveLessonPlan()" style="display:none; background:var(--amber); border:none;">⭐ 저장</button>
+          </div>
+        </div>
+        <div id="outputContent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ AI KIDS-NOTE PAGE ════ -->
+  <div class="page" id="page-kidsnote">
+    <div style="padding:2rem;">
+      <div class="page-title">✉️ AI Kids-Note</div>
+      <div class="page-sub">아이 사진 한 장으로 학부모가 감동받는 알림장을 자동 생성합니다</div>
+
+      <div class="kids-layout">
+        <!-- LEFT: Input -->
+        <div>
+          <div class="kids-upload" id="kidsUploadZone">
+            <input type="file" accept="image/*" id="kidsFile" onchange="handleKidsUpload(event)">
+            <div style="font-size:40px;margin-bottom:10px;">🧒</div>
+            <div style="font-size:15px;font-weight:700;color:var(--g7);margin-bottom:4px;">활동 중인 아이 사진 업로드</div>
+            <div style="font-size:12px;color:var(--g5)">GPT-4o Vision으로 자동 분석</div>
+          </div>
+          <img id="kidsImgPreview" class="kids-img-preview" />
+
+          <div class="vlm-output" id="vlmOutput">
+            <div class="vlm-label">🔍 VLM 분석 결과</div>
+            <div id="vlmText"></div>
+          </div>
+
+          <div class="card" style="margin-bottom:1rem;">
+            <div class="card-title" style="font-size:14px;margin-bottom:10px;">오늘의 활동 내용 입력</div>
+            <textarea id="kidsActivityText" placeholder="예: 오늘은 나뭇잎과 물감을 활용하여 협동 놀이를 진행했습니다. 아이들이 색깔을 섞으며 즐거워했어요." style="width:100%;min-height:90px;border:1.5px solid var(--g2);border-radius:var(--r);padding:10px 14px;font-family:var(--font);font-size:13px;outline:none;background:var(--white);color:var(--g9);resize:vertical;line-height:1.5;" onkeyup="updateActivityCount()"></textarea>
+            <div style="text-align:right;font-size:11px;color:var(--g5);margin-top:4px;"><span id="activityCharCount">0</span>자</div>
+          </div>
+
+          <div style="margin-bottom:1rem;">
+            <div style="font-size:13px;font-weight:700;color:var(--g7);margin-bottom:8px;">알림장 톤 선택</div>
+            <div class="tone-selector">
+              <button class="tone-chip active" onclick="selectTone(this)">🤗 다정하게</button>
+              <button class="tone-chip" onclick="selectTone(this)">📚 전문적으로</button>
+              <button class="tone-chip" onclick="selectTone(this)">😊 밝고 활기차게</button>
+              <button class="tone-chip" onclick="selectTone(this)">🌿 자연스럽게</button>
+            </div>
+          </div>
+
+          <button class="btn-scan" id="genNoteBtn" onclick="generateNote()" style="width:100%;justify-content:center;">
+            <span id="noteGenText">✨ 알림장 생성하기</span>
+            <div class="spinner" id="noteSpinner"></div>
+          </button>
+        </div>
+
+        <!-- RIGHT: Output -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--g7);margin-bottom:10px;">📝 알림장 미리보기</div>
+          <div class="note-output">
+            <div style="font-size:11px;color:var(--g5);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--g2);">
+              2026년 6월 7일 · 오늘의 활동 알림
+            </div>
+            <div class="note-output-inner" id="noteOutputText" class="empty">
+              왼쪽에서 사진을 업로드하고 알림장을 생성해 보세요.
+            </div>
+            <div class="note-char-count" id="noteCharCount">0 / 300자</div>
+          </div>
+          <div class="note-actions">
+            <button class="btn-regen" onclick="generateNote()">🔄 다시 생성</button>
+            <button class="btn-regen" onclick="copyNote()" id="btnCopyNote" style="background:var(--g1);color:var(--g7);border:1px solid var(--g2);">📋 복사</button>
+          </div>
+          <div class="card" style="margin-top:1.5rem;">
+            <div class="card-title" style="font-size:13px;margin-bottom:10px;">📊 파이프라인 현황</div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;"></div>
+                <span style="font-size:12px;color:var(--g7);">Image Input → VLM 분석</span>
+                <span style="font-size:11px;color:var(--teal);margin-left:auto;" id="pipe1">대기중</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--amber);flex-shrink:0;"></div>
+                <span style="font-size:12px;color:var(--g7);">지도안 Context 호출</span>
+                <span style="font-size:11px;color:var(--g5);margin-left:auto;" id="pipe2">대기중</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:8px;height:8px;border-radius:50%;background:var(--coral);flex-shrink:0;"></div>
+                <span style="font-size:12px;color:var(--g7);">Tone-Tuning LLM 생성</span>
+                <span style="font-size:11px;color:var(--g5);margin-left:auto;" id="pipe3">대기중</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ MY LESSONS PAGE ════ -->
+  <div class="page" id="page-activitylog">
+    <div style="padding:2rem;">
+      <div class="page-title">📋 내 지도안 보관함</div>
+      <div class="page-sub">생성한 지도안을 저장하고 즐겨찾기로 관리하세요</div>
+      <div style="display:flex;gap:10px;margin-bottom:1.5rem;flex-wrap:wrap;align-items:center;">
+        <select id="logFilterFav" onchange="loadMyLessons()" style="height:38px;border:1px solid var(--g2);border-radius:var(--r);padding:0 12px;font-family:var(--font);font-size:13px;background:var(--white);color:var(--g9);outline:none;">
+          <option value="all">전체 지도안</option>
+          <option value="fav">⭐ 즐겨찾기만</option>
+        </select>
+        <button class="btn-primary" style="height:38px;margin-left:auto;" onclick="showPage('scanner', document.querySelector('.nav-item:nth-child(3)'))">+ 새 지도안 생성</button>
+      </div>
+      <div id="logNeedLogin" style="display:none; text-align:center; padding:3rem 1rem;">
+        <div style="font-size:48px; margin-bottom:16px;">🔐</div>
+        <div style="font-size:16px; font-weight:700; color:var(--g7); margin-bottom:8px;">로그인이 필요합니다</div>
+        <div style="font-size:13px; color:var(--g5); margin-bottom:20px;">지도안을 저장하려면 먼저 로그인해주세요</div>
+        <button class="btn-primary" onclick="showModal()">로그인 / 회원가입</button>
+      </div>
+      <div id="logEmpty" style="display:none; text-align:center; padding:3rem 1rem;">
+        <div style="font-size:48px; margin-bottom:16px;">📂</div>
+        <div style="font-size:16px; font-weight:700; color:var(--g7); margin-bottom:8px;">저장된 지도안이 없습니다</div>
+        <div style="font-size:13px; color:var(--g5);">Play-Scanner에서 지도안을 생성하고 ⭐ 저장해보세요</div>
+      </div>
+      <ul class="log-list" id="logList"></ul>
+    </div>
+  </div>
+
+  <!-- 지도안 상세 보기 모달 -->
+  <div id="lessonDetailModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; backdrop-filter:blur(4px);" onclick="if(event.target===this) closeLessonDetail();">
+    <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; max-width:800px; max-height:85vh; background:var(--white); border-radius:var(--r-lg); box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow-y:auto;">
+      <div style="padding:20px 24px; border-bottom:1px solid var(--g2); position:sticky; top:0; background:var(--white); z-index:1;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div id="lessonDetailTitle" style="font-size:18px; font-weight:700; color:var(--g9);"></div>
+          <button onclick="closeLessonDetail()" style="width:32px; height:32px; border:none; background:var(--g1); border-radius:50%; cursor:pointer; font-size:18px; color:var(--g7);">×</button>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+          <button onclick="copyLessonDetail()" style="padding:7px 12px; border:1px solid var(--g2); border-radius:var(--r); background:var(--white); font-family:var(--font); font-size:12px; cursor:pointer; height:34px;">📋 복사</button>
+          <button onclick="downloadSavedAsMd()" style="padding:7px 12px; border:1px solid var(--g2); border-radius:var(--r); background:var(--white); font-family:var(--font); font-size:12px; cursor:pointer; height:34px;">📥 .md</button>
+          <div style="flex:1; min-width:0;"></div>
+          <select id="savedLessonTplSelect" style="height:34px; padding:0 10px; border:1px solid var(--g2); border-radius:var(--r); font-family:var(--font); font-size:12px; background:var(--white); color:var(--g7); outline:none; max-width:200px;">
+            <option value="">기본 양식</option>
+          </select>
+          <button onclick="downloadSavedAsDocx()" style="padding:7px 14px; border:none; border-radius:var(--r); background:var(--teal); color:var(--white); font-family:var(--font); font-size:12px; font-weight:700; cursor:pointer; height:34px;">📄 .docx 다운로드</button>
+        </div>
+      </div>
+      <div id="lessonDetailContent" class="lesson-md" style="padding:24px;"></div>
+    </div>
+  </div>
+
+  
+  <!-- ════ MY TEMPLATES PAGE ════ -->
+  <div class="page" id="page-templates">
+    <div style="padding:2rem;">
+      <div class="page-title">📄 내 지도안 양식</div>
+      <div class="page-sub">우리 유치원 양식(.docx 또는 .hwp)을 업로드하면 그 양식에 맞춰 지도안을 생성합니다</div>
+      <div style="margin-bottom:1rem;padding:12px 14px;background:var(--amber-3);border-left:3px solid var(--amber);border-radius:6px;font-size:12px;color:var(--g7);line-height:1.6;">
+        💡 <b>.hwp 파일 안내:</b> .hwp는 텍스트만 추출되며, 출력은 .docx로만 가능합니다. 한컴오피스에서 .docx로 열어서 .hwp로 저장하세요.
+      </div>
+
+      <div id="tplNeedLogin" style="display:none; text-align:center; padding:3rem 1rem;">
+        <div style="font-size:48px; margin-bottom:16px;">🔐</div>
+        <div style="font-size:16px; font-weight:700; color:var(--g7); margin-bottom:8px;">로그인이 필요합니다</div>
+        <button class="btn-primary" onclick="showModal()">로그인 / 회원가입</button>
+      </div>
+
+      <div id="tplContent">
+        <!-- 업로드 영역 -->
+        <div class="card" style="margin-bottom:1.5rem;">
+          <div class="card-title" style="margin-bottom:12px;">새 양식 업로드</div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:end;">
+            <div style="flex:1;min-width:200px;">
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--g7);margin-bottom:6px;">양식 이름</label>
+              <input id="tplName" type="text" placeholder="예: 우리유치원 표준양식" style="width:100%;height:40px;padding:0 12px;border:1.5px solid var(--g2);border-radius:var(--r);font-family:var(--font);font-size:13px;background:var(--white);outline:none;">
+            </div>
+            <div style="flex:1;min-width:200px;">
+              <label style="display:block;font-size:12px;font-weight:600;color:var(--g7);margin-bottom:6px;">파일 (.docx 또는 .hwp)</label>
+              <input id="tplFile" type="file" accept=".docx,.hwp" style="width:100%;height:40px;padding:7px 12px;border:1.5px solid var(--g2);border-radius:var(--r);font-family:var(--font);font-size:12px;background:var(--white);">
+            </div>
+            <button class="btn-primary" style="height:40px;" onclick="uploadTemplate()">업로드</button>
+          </div>
+          <div id="tplUploadResult" style="margin-top:12px;display:none;"></div>
+        </div>
+
+        <!-- 양식 목록 -->
+        <div style="font-size:13px;font-weight:700;color:var(--g7);margin-bottom:10px;">📋 업로드된 양식</div>
+        <div id="tplEmpty" style="display:none;text-align:center;padding:2rem;color:var(--g5);font-size:13px;">아직 업로드된 양식이 없습니다.</div>
+        <ul class="log-list" id="tplList"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ COMMUNITY PAGE ════ -->
+  <div class="page" id="page-community">
+    <div style="padding:2rem;">
+      <div class="page-title">💬 커뮤니티</div>
+      <div class="page-sub">선생님들과 교육 아이디어를 나눠보세요</div>
+      <div style="display:flex;gap:10px;margin-bottom:1.5rem;">
+        <button class="tone-chip active" style="border-radius:var(--r);">전체</button>
+        <button class="tone-chip" style="border-radius:var(--r);">질문</button>
+        <button class="tone-chip" style="border-radius:var(--r);">요청</button>
+        <button class="tone-chip" style="border-radius:var(--r);">공유</button>
+        <button class="btn-primary" style="height:38px;margin-left:auto;">+ 글쓰기</button>
+      </div>
+      <ul class="comm-list" style="gap:10px;">
+        <li class="comm-item" style="padding:1.25rem;border-radius:var(--r-lg);">
+          <div class="comm-meta"><span class="comm-tag q">질문</span><span style="font-size:11px;color:var(--g5)">오늘 · 김○○ · 조회 145</span></div>
+          <div class="comm-title" style="font-size:15px;font-weight:700;margin-bottom:6px;">아이들이 밥을 안 먹어요 ㅠㅠ 어떻게 하면 좋을까요?</div>
+          <div style="font-size:13px;color:var(--g7);margin-bottom:8px;line-height:1.7;">요즘 점심시간마다 아이들이 음식을 잘 안 먹어서 고민이에요. 식습관 잡는 좋은 활동 있으시면 추천해 주세요!</div>
+          <div class="comm-like">👍 12 · 💬 댓글 5</div>
+        </li>
+        <li class="comm-item" style="padding:1.25rem;border-radius:var(--r-lg);">
+          <div class="comm-meta"><span class="comm-tag r">요청</span><span style="font-size:11px;color:var(--g5)">어제 · 이○○</span></div>
+          <div class="comm-title" style="font-size:15px;font-weight:700;margin-bottom:6px;">수업 자료 공유 부탁드려요</div>
+          <div style="font-size:13px;color:var(--g7);margin-bottom:8px;line-height:1.7;">5월 가정의 달 주제로 지도안 공유해 주실 분 계신가요? Play-Scanner로 만든 거 공유해도 좋습니다!</div>
+          <div class="comm-like">👍 8 · 💬 댓글 3</div>
+        </li>
+        <li class="comm-item" style="padding:1.25rem;border-radius:var(--r-lg);">
+          <div class="comm-meta"><span class="comm-tag t">공유</span><span style="font-size:11px;color:var(--g5)">2일 전 · 박○○</span></div>
+          <div class="comm-title" style="font-size:15px;font-weight:700;margin-bottom:6px;">레지오 방식 자연탐구 지도안 공유합니다 🌿</div>
+          <div style="font-size:13px;color:var(--g7);margin-bottom:8px;line-height:1.7;">솔방울로 진행한 레지오 에밀리아 수업이에요. 아이들 반응 정말 좋았어요! Play-Scanner로 생성하고 제가 조금 수정했습니다.</div>
+          <div class="comm-like">👍 31 · 💬 댓글 14</div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- ════ NOTICE PAGE ════ -->
+  <div class="page" id="page-notice">
+    <div style="padding:2rem;">
+      <div class="page-title">📢 공지사항</div>
+      <div class="page-sub">Edu-bridge 업데이트 및 주요 소식</div>
+      <ul class="log-list" style="gap:10px;">
+        <li class="log-item">
+          <div class="log-thumb" style="font-size:22px;">📅</div>
+          <div class="log-content">
+            <div class="log-title">5월달 주요 일정 안내</div>
+            <div class="log-meta">Edu-bridge 운영팀</div>
+          </div>
+          <div class="log-right"><div class="log-date">2025.05.01</div></div>
+        </li>
+        <li class="log-item">
+          <div class="log-thumb" style="font-size:22px;">🚀</div>
+          <div class="log-content">
+            <div class="log-title">Edu-bridge v2.0 업데이트 — Play-Scanner 정확도 향상</div>
+            <div class="log-meta">AI 인식 신뢰도 평균 12% 향상, 발도르프 데이터셋 추가</div>
+          </div>
+          <div class="log-right"><div class="log-date">2025.04.28</div></div>
+        </li>
+        <li class="log-item">
+          <div class="log-thumb" style="font-size:22px;">🔧</div>
+          <div class="log-content">
+            <div class="log-title">서버 점검 예정 안내 (5월 20일)</div>
+            <div class="log-meta">오전 2시~4시 서비스 일시 중단</div>
+          </div>
+          <div class="log-right"><div class="log-date">2025.04.25</div></div>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div><!-- /main-wrap -->
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-box" style="max-width:420px;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+
+    <!-- 탭 -->
+    <div style="display:flex; border-bottom:1px solid var(--g2); margin:-24px -28px 20px; padding:0 28px;">
+      <button id="tab-login" onclick="switchAuthTab('login')" style="flex:1; padding:14px; border:none; background:none; font-family:var(--font); font-size:14px; font-weight:600; color:var(--teal); border-bottom:2px solid var(--teal); cursor:pointer;">로그인</button>
+      <button id="tab-signup" onclick="switchAuthTab('signup')" style="flex:1; padding:14px; border:none; background:none; font-family:var(--font); font-size:14px; font-weight:600; color:var(--g5); border-bottom:2px solid transparent; cursor:pointer;">회원가입</button>
+    </div>
+
+    <!-- 로그인 폼 -->
+    <div id="form-login">
+      <div class="modal-title">EDU-bridge 로그인</div>
+      <div class="modal-sub">교사 전용 글로벌 교육안 플랫폼</div>
+      <div class="login-fields">
+        <input type="email" id="login-email" placeholder="이메일" autocomplete="email">
+        <input type="password" id="login-password" placeholder="비밀번호" autocomplete="current-password">
+      </div>
+      <div id="login-error" style="display:none; padding:10px 12px; background:var(--coral-3); border-radius:var(--r); color:var(--coral); font-size:13px; margin-bottom:12px;"></div>
+      <button class="btn-modal-primary" onclick="handleLogin()">로그인</button>
+      <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--g5);">계정이 없으신가요? <span style="color:var(--teal);font-weight:700;cursor:pointer;" onclick="switchAuthTab('signup')">회원가입</span></div>
+    </div>
+
+    <!-- 회원가입 폼 -->
+    <div id="form-signup" style="display:none;">
+      <div class="modal-title">새 계정 만들기</div>
+      <div class="modal-sub">글로벌 교육안 설계를 시작하세요</div>
+      <div class="login-fields">
+        <input type="email" id="signup-email" placeholder="이메일" autocomplete="email">
+        <input type="text" id="signup-username" placeholder="사용자명" autocomplete="username">
+        <input type="text" id="signup-fullname" placeholder="이름 (선택)" autocomplete="name">
+        <input type="password" id="signup-password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password">
+        <input type="password" id="signup-password-confirm" placeholder="비밀번호 확인" autocomplete="new-password">
+      </div>
+      <div id="signup-error" style="display:none; padding:10px 12px; background:var(--coral-3); border-radius:var(--r); color:var(--coral); font-size:13px; margin-bottom:12px;"></div>
+      <button class="btn-modal-primary" onclick="handleSignup()">회원가입</button>
+      <div style="text-align:center;margin-top:12px;font-size:13px;color:var(--g5);">이미 계정이 있으신가요? <span style="color:var(--teal);font-weight:700;cursor:pointer;" onclick="switchAuthTab('login')">로그인</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─ PAGE ROUTING ─
+function showPage(id, navEl, section) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (navEl) navEl.classList.add('active');
+}
+
+// ─ MODAL ─
+function showModal() { document.getElementById('loginModal').classList.add('show'); switchAuthTab('login'); }
+function closeModal() {
+  document.getElementById('loginModal').classList.remove('show');
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('signup-error').style.display = 'none';
+}
+document.getElementById('loginModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ─ AUTH TAB ─
+function switchAuthTab(tab) {
+  const tl = document.getElementById('tab-login'), ts = document.getElementById('tab-signup');
+  const fl = document.getElementById('form-login'), fs = document.getElementById('form-signup');
+  if (tab === 'login') {
+    tl.style.color = 'var(--teal)'; tl.style.borderBottomColor = 'var(--teal)';
+    ts.style.color = 'var(--g5)'; ts.style.borderBottomColor = 'transparent';
+    fl.style.display = 'block'; fs.style.display = 'none';
+  } else {
+    ts.style.color = 'var(--teal)'; ts.style.borderBottomColor = 'var(--teal)';
+    tl.style.color = 'var(--g5)'; tl.style.borderBottomColor = 'transparent';
+    fs.style.display = 'block'; fl.style.display = 'none';
+  }
+}
+
+// ─ AUTH STATE ─
+let currentUser = null;
+
+window.addEventListener('DOMContentLoaded', () => { checkAuthStatus(); });
+
+async function checkAuthStatus() {
+  const token = localStorage.getItem('auth_token');
+  if (!token) { updateUIForGuest(); return; }
+  try {
+    const r = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (r.ok) { currentUser = await r.json(); updateUIForUser(currentUser); }
+    else { localStorage.removeItem('auth_token'); updateUIForGuest(); }
+  } catch(e) { updateUIForGuest(); }
+}
+
+function updateUIForUser(user) {
+  const name = user.full_name || user.username;
+  const initial = name ? name[0] : '?';
+  // sidebar
+  var sb = document.getElementById('sidebar-login-btn'); if (sb) sb.style.display = 'none';
+  var sp = document.getElementById('sidebar-profile'); if (sp) { sp.style.display = 'flex'; sp.innerHTML = '<div class="avatar-circle">' + initial + '</div><div><div class="user-name">' + name + '</div><div class="user-role">유치원 교사</div></div>'; }
+  // topbar
+  var lb = document.getElementById('login-btn-area'); if (lb) lb.innerHTML = '<span style="font-size:13px;color:var(--g7);font-weight:600;cursor:pointer;" onclick="handleLogout()">' + name + '님 (로그아웃)</span>';
+  // greeting
+  var gb = document.getElementById('greeting-block'); if (gb) gb.style.display = 'block';
+  var nb = document.getElementById('notif-btn'); if (nb) nb.style.display = 'flex';
+  var pt = document.querySelector('#page-dashboard .page-title'); if (pt) pt.textContent = '안녕하세요, ' + name + '님 👋';
+  updateSaveButton();
+}
+
+function updateUIForGuest() {
+  currentUser = null;
+  var sb = document.getElementById('sidebar-login-btn'); if (sb) sb.style.display = 'block';
+  var sp = document.getElementById('sidebar-profile'); if (sp) sp.style.display = 'none';
+  var lb = document.getElementById('login-btn-area'); if (lb) lb.innerHTML = '<button class="btn-primary" style="height:34px;padding:0 14px;font-size:13px;" onclick="showModal()">로그인</button>';
+  updateSaveButton();
+}
+
+async function handleLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pw = document.getElementById('login-password').value;
+  const err = document.getElementById('login-error');
+  if (!email || !pw) { err.textContent = '이메일과 비밀번호를 입력해주세요.'; err.style.display = 'block'; return; }
+  try {
+    const r = await fetch('/api/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password:pw}) });
+    const d = await r.json();
+    if (r.ok) { localStorage.setItem('auth_token', d.access_token); currentUser = d.user; updateUIForUser(d.user); closeModal(); showToast('로그인되었습니다!','success'); }
+    else { err.textContent = d.detail || '로그인 실패'; err.style.display = 'block'; }
+  } catch(e) { err.textContent = '서버 오류'; err.style.display = 'block'; }
+}
+
+async function handleSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const username = document.getElementById('signup-username').value.trim();
+  const fullname = document.getElementById('signup-fullname').value.trim();
+  const pw = document.getElementById('signup-password').value;
+  const pw2 = document.getElementById('signup-password-confirm').value;
+  const err = document.getElementById('signup-error');
+  if (!email||!username||!pw) { err.textContent='이메일, 사용자명, 비밀번호는 필수입니다.'; err.style.display='block'; return; }
+  if (pw.length<6) { err.textContent='비밀번호는 6자 이상이어야 합니다.'; err.style.display='block'; return; }
+  if (pw!==pw2) { err.textContent='비밀번호가 일치하지 않습니다.'; err.style.display='block'; return; }
+  try {
+    const r = await fetch('/api/signup', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, username, password:pw, full_name:fullname||null}) });
+    const d = await r.json();
+    if (r.ok) { localStorage.setItem('auth_token', d.access_token); currentUser = d.user; updateUIForUser(d.user); closeModal(); showToast('환영합니다! 회원가입 완료!','success'); }
+    else { err.textContent = d.detail || '회원가입 실패'; err.style.display = 'block'; }
+  } catch(e) { err.textContent = '서버 오류'; err.style.display = 'block'; }
+}
+
+function handleLogout() {
+  if (confirm('로그아웃하시겠습니까?')) { localStorage.removeItem('auth_token'); currentUser = null; updateUIForGuest(); showToast('로그아웃되었습니다.','info'); }
+}
+
+document.addEventListener('keypress', function(e) {
+  if (e.key === 'Enter' && document.getElementById('login-password') === document.activeElement) handleLogin();
+  if (e.key === 'Enter' && document.getElementById('signup-password-confirm') === document.activeElement) handleSignup();
+});
+
+// ─ TOAST ─
+function showToast(msg, type) {
+  const t = document.createElement('div');
+  const bg = type==='success' ? 'var(--teal)' : type==='error' ? 'var(--coral)' : 'var(--g7)';
+  t.style.cssText = 'position:fixed;top:80px;right:20px;background:'+bg+';color:var(--white);padding:14px 20px;border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,0.2);z-index:10000;font-size:14px;font-weight:600;transition:opacity 0.3s;';
+  t.textContent = msg; document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ─ SAVE LESSON ─
+function updateSaveButton() {
+  const btn = document.getElementById('btnSaveLesson');
+  if (btn) btn.style.display = localStorage.getItem('auth_token') ? 'inline-block' : 'none';
+}
+
+async function saveLessonPlan() {
+  const token = localStorage.getItem('auth_token');
+  if (!token) { showModal(); return; }
+  const content = document.getElementById('outputContent');
+  const md = content.dataset.markdown, cc = content.dataset.country;
+  if (!md) { showToast('저장할 지도안이 없습니다.','error'); return; }
+  const card = _state.cards && _state.cards[_state.selectedCardIdx];
+  const title = card ? card.card_title : '지도안';
+  const btn = document.getElementById('btnSaveLesson');
+  btn.textContent = '저장 중...'; btn.disabled = true;
+  try {
+    const r = await fetch(API_BASE+'/api/lessons/save', { method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+token}, body:JSON.stringify({title, search_query:_state.searchQuery, country_code:cc, age:_state.age, duration:_state.duration, card_data:card||null, lesson_markdown:md}) });
+    if (r.status===401) { localStorage.removeItem('auth_token'); showModal(); return; }
+    const d = await r.json();
+    if (r.ok) { btn.textContent='✅ 저장됨!'; showToast('지도안이 저장되었습니다!','success'); setTimeout(()=>{btn.textContent='⭐ 저장';btn.disabled=false;},2000); }
+    else throw new Error(d.detail);
+  } catch(e) { showToast('저장 실패: '+e.message,'error'); btn.textContent='⭐ 저장'; btn.disabled=false; }
+}
+
+// ─ MY LESSONS ─
+async function loadMyLessons() {
+  const token = localStorage.getItem('auth_token');
+  const needLogin = document.getElementById('logNeedLogin');
+  const empty = document.getElementById('logEmpty');
+  const list = document.getElementById('logList');
+  if (!needLogin) return;
+  if (!token) { needLogin.style.display='block'; empty.style.display='none'; list.innerHTML=''; return; }
+  needLogin.style.display='none';
+  try {
+    const r = await fetch(API_BASE+'/api/lessons/my', { headers:{'Authorization':'Bearer '+token} });
+    if (r.status===401) { needLogin.style.display='block'; return; }
+    const lessons = await r.json();
+    const filter = document.getElementById('logFilterFav').value;
+    const filtered = filter==='fav' ? lessons.filter(l=>l.is_favorite) : lessons;
+    if (!filtered.length) { empty.style.display='block'; list.innerHTML=''; return; }
+    empty.style.display='none';
+    list.innerHTML = filtered.map(l => {
+      const flag = FLAGS[l.country_code]||'🌐', date = new Date(l.created_at).toLocaleDateString('ko-KR');
+      return '<li class="log-item"><div class="log-thumb">'+flag+'</div><div class="log-content"><div class="log-title">'+escapeHtml(l.title)+'</div><div class="log-meta">'+escapeHtml(l.search_query)+' · 만 '+l.age+'세 · '+l.duration+'분</div><div class="log-badges"><span class="log-badge" style="background:var(--teal-3);color:var(--teal-dark)">'+l.country_code+'</span>'+(l.is_favorite?'<span class="log-badge" style="background:#FAEEDA;color:#854F0B">⭐ 즐겨찾기</span>':'')+'</div></div><div class="log-right"><div class="log-date">'+date+'</div><div class="log-actions"><button class="log-action-btn" style="color:'+(l.is_favorite?'#EF9F27':'var(--g3)')+'" onclick="toggleFavorite('+l.id+',event)">'+(l.is_favorite?'⭐':'☆')+'</button><button class="log-action-btn" style="background:var(--teal-3);color:var(--teal-dark);border:none;" onclick="viewLessonDetail('+l.id+')">📖 보기</button><button class="log-action-btn" style="background:var(--g1);color:var(--coral);border:1px solid var(--g2);" onclick="deleteLesson('+l.id+',event)">🗑</button></div></div></li>';
+    }).join('');
+  } catch(e) { list.innerHTML='<li style="padding:2rem;text-align:center;color:var(--g5);">불러오기 실패</li>'; }
+}
+
+async function toggleFavorite(id, e) {
+  e.stopPropagation();
+  const token = localStorage.getItem('auth_token'); if(!token) return;
+  try { await fetch(API_BASE+'/api/lessons/'+id+'/favorite', {method:'PATCH',headers:{'Authorization':'Bearer '+token}}); loadMyLessons(); } catch(e) {}
+}
+
+let _currentSavedLesson = null;
+
+async function viewLessonDetail(id) {
+  const token = localStorage.getItem('auth_token'); if(!token) return;
+  try {
+    const r = await fetch(API_BASE+'/api/lessons/'+id, {headers:{'Authorization':'Bearer '+token}});
+    const l = await r.json();
+    _currentSavedLesson = l;
+    document.getElementById('lessonDetailTitle').textContent = (FLAGS[l.country_code]||'🌐')+' '+l.title;
+    const h = typeof marked!=='undefined' ? marked.parse(l.lesson_markdown) : '<pre>'+escapeHtml(l.lesson_markdown)+'</pre>';
+    document.getElementById('lessonDetailContent').innerHTML = h;
+    document.getElementById('lessonDetailContent').dataset.markdown = l.lesson_markdown;
+    document.getElementById('lessonDetailModal').style.display = 'block';
+    // 양식 드롭다운 채우기
+    populateSavedLessonTplSelect();
+  } catch(e) { showToast('불러오기 실패','error'); }
+}
+
+async function populateSavedLessonTplSelect() {
+  const sel = document.getElementById('savedLessonTplSelect');
+  if (!sel) return;
+  const token = localStorage.getItem('auth_token');
+  if (!token) return;
+  
+  // 이미 로드된 _userTemplates 사용, 비어있으면 로드
+  if (!_userTemplates || _userTemplates.length === 0) {
+    try {
+      const r = await fetch(API_BASE + '/api/templates/my', {
+        headers: { 'Authorization': 'Bearer ' + token },
+      });
+      if (r.ok) _userTemplates = await r.json();
+    } catch (e) { /* ignore */ }
+  }
+  
+  const opts = ['<option value="">기본 양식</option>'];
+  for (const t of (_userTemplates || [])) {
+    opts.push('<option value="' + t.id + '">' + escapeHtml(t.template_name) + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+}
+
+function downloadSavedAsMd() {
+  if (!_currentSavedLesson) { showToast('지도안이 없습니다.', 'error'); return; }
+  const blob = new Blob([_currentSavedLesson.lesson_markdown], { type: 'text/markdown;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (_currentSavedLesson.title || '지도안') + '.md';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('.md 다운로드 완료!', 'success');
+}
+
+async function downloadSavedAsDocx() {
+  if (!_currentSavedLesson) { showToast('지도안이 없습니다.', 'error'); return; }
+  
+  const tplSelect = document.getElementById('savedLessonTplSelect');
+  const templateId = tplSelect && tplSelect.value ? parseInt(tplSelect.value) : null;
+  const md = _currentSavedLesson.lesson_markdown;
+  const title = _currentSavedLesson.title || '지도안';
+  
+  showToast(templateId ? '양식 적용해서 docx 생성 중...' : '.docx 생성 중...', 'info');
+  
+  let sectionsData = null;
+  if (templateId) {
+    try {
+      const r = await fetch(API_BASE + '/api/lesson/parse-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown: md }),
+      });
+      sectionsData = await r.json();
+    } catch (e) {
+      console.error('섹션 파싱 실패:', e);
+    }
+  }
+  
+  try {
+    const r = await fetch(API_BASE + '/api/lesson/export-docx', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        markdown: md,
+        title: title,
+        template_id: templateId,
+        sections_data: sectionsData,
+      }),
+    });
+    if (!r.ok) throw new Error('생성 실패');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = title + '.docx';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('.docx 다운로드 완료!', 'success');
+  } catch (e) {
+    showToast('다운로드 실패: ' + e.message, 'error');
+  }
+}
+function closeLessonDetail() { document.getElementById('lessonDetailModal').style.display='none'; }
+function copyLessonDetail() { const md = document.getElementById('lessonDetailContent').dataset.markdown; if(md) navigator.clipboard.writeText(md).then(()=>showToast('복사됨!','success')); }
+
+async function deleteLesson(id, e) {
+  e.stopPropagation(); if(!confirm('삭제하시겠습니까?')) return;
+  const token = localStorage.getItem('auth_token'); if(!token) return;
+  try { const r = await fetch(API_BASE+'/api/lessons/'+id, {method:'DELETE',headers:{'Authorization':'Bearer '+token}}); if(r.ok){showToast('삭제됨','info');loadMyLessons();} } catch(e) {}
+}
+
+// ─ PAGE HOOK ─
+const _origShowPage = showPage;
+showPage = function(id, navEl, section) {
+  _origShowPage(id, navEl, section);
+  if (id === 'activitylog') loadMyLessons();
+  updateSaveButton();
+};
+const _origRenderLesson = typeof renderLessonOutput !== 'undefined' ? renderLessonOutput : null;
+if (_origRenderLesson) {
+  renderLessonOutput = function(card, md) { _origRenderLesson(card, md); updateSaveButton(); };
+}
+
+// ─ TONE SELECTOR ─
+function selectTone(el) {
+  document.querySelectorAll('.tone-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// ─ IMAGE UPLOAD PREVIEW (Scanner) ─
+function handleImageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const img = document.getElementById('uploadedImg');
+  img.src = URL.createObjectURL(file);
+  img.style.display = 'block';
+  document.getElementById('uploadZone').style.display = 'none';
+}
+
+// ─ KIDS IMAGE UPLOAD ─
+function handleKidsUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const preview = document.getElementById('kidsImgPreview');
+  preview.src = URL.createObjectURL(file);
+  preview.classList.add('show');
+  document.getElementById('kidsUploadZone').style.display = 'none';
+  // 실제 VLM 분석은 알림장 생성 시 백엔드에서 수행
+  const vlmOutput = document.getElementById('vlmOutput');
+  if (vlmOutput) vlmOutput.classList.remove('show');
+}
+
+// ─ RUN SCAN (실제 백엔드 호출) ─
+const API_BASE = '';
+
+let _state = {
+  cards: null,
+  retrievalChunks: null,
+  selectedCardIdx: 0,
+  searchQuery: '',
+  age: 4,
+  duration: 40,
+  // rotation 관련
+  offset: 0,
+  poolSize: 10,
+  hasMore: false,
+};
+
+const FLAGS = {
+  KOR: '🇰🇷', JPN: '🇯🇵', SGP: '🇸🇬', GBR: '🇬🇧', GER: '🇩🇪',
+  ITA: '🇮🇹', FIN: '🇫🇮', SWE: '🇸🇪', AUS: '🇦🇺', NZL: '🇳🇿',
+};
+
+const CARD_COLOR_CLASSES = ['nuri', 'reggio', 'waldorf'];
+
+async function runScan() {
+  const btn = document.getElementById('scanBtn');
+  const spinner = document.getElementById('scanSpinner');
+  const btnText = document.getElementById('scanBtnText');
+  const topic = document.getElementById('topicInput').value.trim();
+  const age = parseInt(document.getElementById('ageInput').value);
+  const duration = parseInt(document.getElementById('durationInput').value);
+  const fileInput = document.getElementById('scanFile');
+  const file = fileInput.files[0];
+
+  if (!topic && !file) {
+    alert('텍스트나 이미지 중 하나는 입력해주세요.');
+    return;
+  }
+
+  btn.classList.add('loading');
+  btnText.textContent = '인식 중...';
+  spinner.classList.add('show');
+
+  document.getElementById('detectionBox').classList.remove('show');
+  document.getElementById('philosophySection').style.display = 'none';
+  document.getElementById('outputArea').classList.remove('show');
+
+  setStep(2);
+  _state.age = age;
+  _state.duration = duration;
+  _state.offset = 0;   // 새 검색이므로 offset 리셋
+
+  try {
+    // Stage A: 키워드 추출
+    const formData = new FormData();
+    formData.append('text', topic);
+    formData.append('age', age);
+    formData.append('duration', duration);
+    if (file) formData.append('image', file);
+
+    const extractRes = await fetch(API_BASE + '/api/extract', {
+      method: 'POST', body: formData,
+    });
+    if (!extractRes.ok) {
+      const err = await extractRes.json();
+      throw new Error('키워드 추출 실패: ' + (err.detail || extractRes.statusText));
+    }
+    const kw = await extractRes.json();
+    _state.searchQuery = kw.search_query;
+
+    showDetection(kw);
+    setStep(3);
+    btnText.textContent = '글로벌 교육 철학 매칭 중...';
+
+    // Stage B-D + E: 카드 3장
+    await fetchAndRenderCards(0);
+
+    setStep(4);
+    btnText.textContent = '✨ 매칭 완료';
+
+  } catch (e) {
+    console.error(e);
+    alert('오류 발생: ' + e.message);
+    btnText.textContent = '✨ 글로벌 교육 철학 매칭 시작';
+  } finally {
+    btn.classList.remove('loading');
+    spinner.classList.remove('show');
+    setTimeout(() => { btnText.textContent = '✨ 글로벌 교육 철학 매칭 시작'; }, 2000);
+  }
+}
+
+// 카드 fetch + 렌더링 (offset 적용)
+async function fetchAndRenderCards(offset) {
+  const cardsRes = await fetch(API_BASE + '/api/cards', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      search_query: _state.searchQuery,
+      age: _state.age,
+      duration: _state.duration,
+      offset: offset,
+      total_pool_size: 10,
+    }),
+  });
+  if (!cardsRes.ok) {
+    const err = await cardsRes.json();
+    throw new Error('카드 생성 실패: ' + (err.detail || cardsRes.statusText));
+  }
+  const data = await cardsRes.json();
+  _state.cards = data.cards;
+  _state.retrievalChunks = data.retrieval_chunks;
+  _state.selectedCardIdx = 0;
+  _state.offset = data.offset;
+  _state.poolSize = data.pool_size;
+  _state.hasMore = data.has_more;
+
+  showPhilosophies(data.cards);
+  updateRotationBar();
+}
+
+// "다른 추천 보기" 버튼 클릭
+async function rotateCards() {
+  const btn = document.getElementById('rotationBtn');
+  const btnText = document.getElementById('rotationBtnText');
+  const origText = btnText.textContent;
+
+  btn.classList.add('loading');
+  btnText.textContent = '⏳ 다음 추천 가져오는 중...';
+
+  // 다음 offset 계산: 0 → 3 → 6 → 0 (rotation)
+  let nextOffset = _state.offset + 3;
+  if (nextOffset >= _state.poolSize) {
+    nextOffset = 0;
+  }
+
+  try {
+    await fetchAndRenderCards(nextOffset);
+    // 출력 영역이 떠 있으면 닫기 (이전 카드 기반이므로)
+    document.getElementById('outputArea').classList.remove('show');
+    // 카드로 스크롤
+    document.getElementById('philosophySection').scrollIntoView({behavior: 'smooth', block: 'start'});
+  } catch (e) {
+    console.error(e);
+    alert('오류: ' + e.message);
+  } finally {
+    btn.classList.remove('loading');
+    btnText.textContent = origText;
+  }
+}
+
+function updateRotationBar() {
+  const label = document.getElementById('rotationLabel');
+  const pool = document.getElementById('rotationPoolSize');
+  const btn = document.getElementById('rotationBtn');
+  const btnText = document.getElementById('rotationBtnText');
+
+  // "상위 1~3순위" / "4~6순위" 같은 라벨
+  const start = _state.offset + 1;
+  const end = Math.min(_state.offset + 3, _state.poolSize);
+  label.textContent = `${start}~${end}순위`;
+  pool.textContent = _state.poolSize;
+
+  // 다음 추천 미리 계산해서 버튼 텍스트에 힌트
+  if (_state.hasMore) {
+    let nextStart = _state.offset + 3 + 1;
+    let nextEnd = Math.min(_state.offset + 6, _state.poolSize);
+    if (nextStart > _state.poolSize) {
+      nextStart = 1;
+      nextEnd = 3;
+    }
+    btnText.textContent = `🔄 다른 추천 보기 (${nextStart}~${nextEnd}순위)`;
+    btn.disabled = false;
+  } else {
+    btnText.textContent = '추천 가능한 다른 국가 없음';
+    btn.disabled = true;
+  }
+}
+
+function showDetection(kw) {
+  const box = document.getElementById('detectionBox');
+  const row = document.getElementById('detectionRow');
+  box.classList.add('show');
+
+  const keywords = (kw.keywords || []).slice(0, 8);
+  const activityType = kw.activity_type || '';
+  const areas = (kw.suggested_areas || []).join(', ');
+
+  let chipsHtml = '';
+  for (const k of keywords) {
+    chipsHtml += `<div class="det-chip">${escapeHtml(k)}</div>`;
+  }
+
+  row.innerHTML = `
+    <div style="width:100%; margin-bottom:8px;">
+      <span style="color:rgba(255,255,255,0.7); font-size:11px;">활동 유형</span>
+      <span style="color:white; font-size:13px; margin-left:8px; font-weight:500;">${escapeHtml(activityType)}</span>
+    </div>
+    <div style="width:100%; margin-bottom:8px;">${chipsHtml}</div>
+    <div style="width:100%;">
+      <span style="color:rgba(255,255,255,0.7); font-size:11px;">누리과정 영역</span>
+      <span style="color:var(--teal-2); font-size:12px; margin-left:8px; font-weight:500;">${escapeHtml(areas)}</span>
+    </div>
+  `;
+}
+
+// ⭐ 단순화된 카드 (v4)
+function showPhilosophies(cards) {
+  const sec = document.getElementById('philosophySection');
+  const grid = document.getElementById('philosophyGrid');
+  sec.style.display = 'block';
+
+  grid.innerHTML = cards.map((card, i) => {
+    const code = card.country_code || '';
+    const flag = FLAGS[code] || '🌐';
+    const colorClass = CARD_COLOR_CLASSES[i % 3];
+
+    const keywords = card.key_keywords || [];
+    const chipsHtml = keywords.map(kw =>
+      `<span class="kw-chip">${escapeHtml(kw)}</span>`
+    ).join('');
+
+    const summary = card.activity_summary || card.activity_preview || '';
+
+    return `
+      <div class="philo-card ${colorClass} fade-up" onclick="selectPhilosophy(this, ${i})">
+        <div class="philo-select-badge">✓</div>
+        <div class="philo-flag">${flag}</div>
+        <div class="philo-name">${escapeHtml(card.country || '')}</div>
+        <div class="philo-title">${escapeHtml(card.card_title || '')}</div>
+        <div class="philo-desc" style="margin-bottom:12px;">${escapeHtml(card.card_subtitle || '')}</div>
+        <span class="philo-tag">${escapeHtml(card.philosophy_tag || '')}</span>
+        <div style="font-size:11px; color:var(--g5); margin-top:8px; font-weight:500;">📚 ${escapeHtml(card.activity_format || '')}</div>
+
+        <div style="margin-top:14px;">
+          <div style="font-size:10px; font-weight:700; color:var(--g7); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:8px;">🎯 핵심 접근</div>
+          <div class="kw-chip-row">${chipsHtml}</div>
+        </div>
+
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:10px; font-weight:700; color:var(--g7); text-transform:uppercase; letter-spacing:0.4px; margin-bottom:6px;">🎬 활동 요약</div>
+          <div style="font-size:13px; color:var(--g7); line-height:1.65;">${escapeHtml(summary)}</div>
+        </div>
+
+        <button class="btn-primary" style="width:100%; margin-top:18px; padding:11px;" onclick="event.stopPropagation(); generateLessonForCard(${i});">
+          이 카드로 지도안 만들기 →
+        </button>
+      </div>
+    `;
+  }).join('');
+}
+
+function selectPhilosophy(el, idx) {
+  document.querySelectorAll('.philo-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  _state.selectedCardIdx = idx;
+}
+
+async function generateLessonForCard(idx) {
+  if (!_state.cards) return;
+  _state.selectedCardIdx = idx;
+  const allCards = document.querySelectorAll('.philo-card');
+  allCards.forEach((c, i) => c.classList.toggle('selected', i === idx));
+
+  const card = _state.cards[idx];
+  const chunks = (_state.retrievalChunks && _state.retrievalChunks[card.country_code]) || [];
+
+  const area = document.getElementById('outputArea');
+  area.classList.add('show');
+  document.getElementById('outputTitle').textContent = `${FLAGS[card.country_code] || '🌐'} ${card.country} 지도안 작성 중...`;
+  document.getElementById('outputContent').innerHTML = `
+    <div style="display:flex; align-items:center; gap:12px; padding:2rem; color:var(--g5);">
+      <div class="spinner show" style="border-color:rgba(0,0,0,0.1); border-top-color:var(--teal); display:block;"></div>
+      <span>${escapeHtml(card.country)} 교육철학에 맞춘 지도안을 작성하고 있습니다... (약 20~30초)</span>
+    </div>
+  `;
+
+  area.scrollIntoView({behavior: 'smooth', block: 'start'});
+
+  try {
+    const res = await fetch(API_BASE + '/api/lesson', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        search_query: _state.searchQuery,
+        age: _state.age,
+        duration: _state.duration,
+        selected_card: card,
+        retrieval_chunks: chunks,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error('지도안 생성 실패: ' + (err.detail || res.statusText));
+    }
+    const data = await res.json();
+    renderLessonOutput(card, data.markdown);
+  } catch (e) {
+    console.error(e);
+    document.getElementById('outputContent').innerHTML = `
+      <div style="padding:1.5rem; background:var(--coral-3); border-radius:var(--r); color:var(--coral);">
+        ❌ ${escapeHtml(e.message)}
+      </div>`;
+  }
+}
+
+function renderLessonOutput(card, markdown) {
+  const titleEl = document.getElementById('outputTitle');
+  const content = document.getElementById('outputContent');
+  const flag = FLAGS[card.country_code] || '🌐';
+
+  titleEl.textContent = `${flag} ${card.country} 지도안 — ${card.card_title}`;
+
+  let html;
+  if (typeof marked !== 'undefined') {
+    html = marked.parse(markdown);
+  } else {
+    html = '<pre style="white-space:pre-wrap;font-family:inherit;">' + escapeHtml(markdown) + '</pre>';
+  }
+
+  content.innerHTML = `<div class="lesson-md">${html}</div>`;
+  content.dataset.markdown = markdown;
+  content.dataset.country = card.country_code;
+  content.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+
+function copyOutput() {
+  const content = document.getElementById('outputContent');
+  const md = content.dataset.markdown || content.innerText;
+  navigator.clipboard.writeText(md).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✅ 복사됨!';
+    setTimeout(() => { btn.textContent = orig; }, 1500);
+  });
+}
+
+function downloadLessonPlan() {
+  const content = document.getElementById('outputContent');
+  const md = content.dataset.markdown;
+  const country = content.dataset.country || 'lesson';
+  if (!md) return;
+  const blob = new Blob([md], {type: 'text/markdown'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `lesson_plan_${country}_${Date.now()}.md`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const step = document.getElementById('step' + i);
+    if (i < n) { step.className = 'step done'; }
+    else if (i === n) { step.className = 'step active'; }
+    else { step.className = 'step'; }
+  }
+  for (let i = 1; i <= 3; i++) {
+    const line = document.getElementById('line' + i);
+    if (line) line.className = 'step-line' + (i < n ? ' done' : '');
+  }
+}
+
+// ─ NOTE GENERATION ─
+const NOTES = {
+  '🤗 다정하게': '오늘 ○○이가 솔방울을 두 손으로 꼭 쥐고, 하나하나 조심조심 쌓으며 환하게 웃었어요 🌿 작은 자연물 하나에도 진지하게 집중하는 모습이 너무 사랑스러웠답니다. 집에서도 솔방울이나 작은 돌멩이로 함께 놀이해 보시면 어떨까요?',
+  '📚 전문적으로': '오늘 자연탐구 활동에서 ○○ 학생은 솔방울을 활용한 소근육 발달 놀이에 참여하였습니다. 물체를 쌓는 과정에서 손가락 협응력과 집중력이 향상되는 모습이 관찰되었으며, 크기 비교를 통한 수학적 사고의 발달 가능성도 확인되었습니다.',
+  '😊 밝고 활기차게': '와, 오늘 ○○이 너무 멋있었어요!! 🎉 솔방울로 탑을 쌓으면서 "선생님, 봐봐요!" 하며 자랑하는 표정이 어찌나 뿌듯해 보이던지요 ✨ 오늘 집에 가서도 분명 솔방울 얘기를 신나게 할 거예요 🌟',
+  '🌿 자연스럽게': '오늘 ○○이가 솔방울을 쌓으며 자연스럽게 집중하는 시간을 보냈어요. 자연물과 친해지는 소중한 시간이었습니다. 오늘의 작은 경험이 자연에 대한 관심으로 이어지길 바랍니다 🍂'
+};
+
+function updateActivityCount() {
+  const t = document.getElementById('kidsActivityText');
+  if (t) document.getElementById('activityCharCount').textContent = t.value.length;
+}
+
+async function generateNote() {
+  const activityText = document.getElementById('kidsActivityText')?.value.trim();
+  if (!activityText) {
+    showToast('활동 내용을 입력해주세요!', 'error');
+    return;
+  }
+
+  const btn = document.getElementById('genNoteBtn');
+  const spinner = document.getElementById('noteSpinner');
+  const text = document.getElementById('noteGenText');
+  const output = document.getElementById('noteOutputText');
+  const activeTone = document.querySelector('.tone-chip.active');
+  const tone = activeTone ? activeTone.textContent.trim() : '🤗 다정하게';
+
+  // UI 로딩 상태
+  btn.classList.add('loading');
+  spinner.classList.add('show');
+  text.textContent = '생성 중...';
+  output.textContent = '알림장을 작성하고 있습니다...';
+  output.style.color = 'var(--g5)';
+
+  document.getElementById('pipe1').textContent = '⚙️ 처리중';
+  document.getElementById('pipe1').style.color = 'var(--amber)';
+  document.getElementById('pipe2').textContent = '대기중';
+  document.getElementById('pipe3').textContent = '대기중';
+
+  try {
+    // 이미지가 있으면 FormData로 전송
+    const formData = new FormData();
+    formData.append('activity_text', activityText);
+    formData.append('tone', tone);
+
+    const kidsFile = document.getElementById('kidsFile');
+    if (kidsFile && kidsFile.files[0]) {
+      formData.append('image', kidsFile.files[0]);
+    }
+
+    document.getElementById('pipe1').textContent = '✅ 완료';
+    document.getElementById('pipe1').style.color = 'var(--teal)';
+    document.getElementById('pipe2').textContent = '⚙️ 처리중';
+    document.getElementById('pipe2').style.color = 'var(--amber)';
+
+    const res = await fetch(API_BASE + '/api/kidsnote/generate', {
+      method: 'POST',
+      body: formData,
+    });
+
+    document.getElementById('pipe2').textContent = '✅ 완료';
+    document.getElementById('pipe2').style.color = 'var(--teal)';
+    document.getElementById('pipe3').textContent = '⚙️ 처리중';
+    document.getElementById('pipe3').style.color = 'var(--amber)';
+
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.detail || '생성 실패');
+
+    document.getElementById('pipe3').textContent = '✅ 완료';
+    document.getElementById('pipe3').style.color = 'var(--teal)';
+
+    output.style.color = 'var(--g9)';
+    output.style.fontStyle = 'normal';
+
+    // 타이핑 효과로 표시
+    typeText('noteOutputText', data.note, 20, () => {
+      document.getElementById('noteCharCount').textContent = data.note.length + ' / 300자';
+    });
+
+    // 오늘 날짜 표시
+    const today = new Date().toLocaleDateString('ko-KR', {year:'numeric', month:'long', day:'numeric'});
+    const dateEl = document.querySelector('.note-output [style*="border-bottom"]');
+    if (dateEl) dateEl.textContent = today + ' · 오늘의 활동 알림';
+
+  } catch (e) {
+    output.textContent = '생성 실패: ' + e.message;
+    output.style.color = 'var(--coral)';
+    document.getElementById('pipe1').textContent = '대기중';
+    document.getElementById('pipe2').textContent = '대기중';
+    document.getElementById('pipe3').textContent = '대기중';
+    showToast('알림장 생성 실패: ' + e.message, 'error');
+  } finally {
+    btn.classList.remove('loading');
+    spinner.classList.remove('show');
+    text.textContent = '✨ 알림장 생성하기';
+  }
+}
+
+function copyNote() {
+  const text = document.getElementById('noteOutputText').textContent;
+  if (!text || text === '왼쪽에서 사진을 업로드하고 알림장을 생성해 보세요.') {
+    showToast('먼저 알림장을 생성해주세요!', 'error');
+    return;
+  }
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('알림장이 복사되었습니다!', 'success');
+  });
+}
+
+function typeText(elId, text, speed, cb) {
+  const el = document.getElementById(elId);
+  el.textContent = '';
+  let i = 0;
+  const timer = setInterval(() => {
+    el.textContent += text[i++];
+    if (i >= text.length) {
+      clearInterval(timer);
+      if (cb) cb();
+    }
+  }, speed);
+}
+
+function copyOutput() {
+  const content = document.getElementById('outputContent');
+  navigator.clipboard.writeText(content.innerText || content.textContent).then(() => {
+    const btn = document.querySelector('.btn-copy');
+    btn.textContent = '✅ 복사됨';
+    setTimeout(() => btn.textContent = '📋 복사', 1500);
+  });
+}
+
+
+// ============================================================
+// Phase 3: 커스텀 양식 기능
+// ============================================================
+
+let _userTemplates = [];
+
+async function loadTemplates() {
+  const token = localStorage.getItem('auth_token');
+  const needLogin = document.getElementById('tplNeedLogin');
+  const content = document.getElementById('tplContent');
+  if (!needLogin || !content) return;
+
+  if (!token) {
+    needLogin.style.display = 'block';
+    content.style.display = 'none';
+    return;
+  }
+  needLogin.style.display = 'none';
+  content.style.display = 'block';
+
+  try {
+    const r = await fetch(API_BASE + '/api/templates/my', {
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (r.status === 401) {
+      localStorage.removeItem('auth_token');
+      needLogin.style.display = 'block';
+      content.style.display = 'none';
+      return;
+    }
+    _userTemplates = await r.json();
+    renderTemplateList(_userTemplates);
+    updateExportTplSelect();
+  } catch (e) {
+    console.error('양식 로드 실패:', e);
+  }
+}
+
+function renderTemplateList(templates) {
+  const list = document.getElementById('tplList');
+  const empty = document.getElementById('tplEmpty');
+  if (!list || !empty) return;
+
+  if (!templates.length) {
+    empty.style.display = 'block';
+    list.innerHTML = '';
+    return;
+  }
+  empty.style.display = 'none';
+
+  list.innerHTML = templates.map(t => {
+    const date = new Date(t.created_at).toLocaleDateString('ko-KR');
+    const sectionNames = (t.sections || []).slice(0, 6).map(s => s.name).join(' · ');
+    const moreCount = Math.max(0, (t.sections || []).length - 6);
+    const tplName = escapeHtml(t.template_name);
+    return `
+      <li class="log-item">
+        <div class="log-thumb">📄</div>
+        <div class="log-content">
+          <div class="log-title">${tplName}</div>
+          <div class="log-meta">${escapeHtml(t.original_filename)} · ${t.structure_type === 'table' ? '표 형식' : t.structure_type === 'hwp_text' ? 'HWP 텍스트' : '단락 형식'}</div>
+          <div style="font-size:11px;color:var(--g5);margin-top:6px;">
+            감지된 섹션 ${(t.sections||[]).length}개: ${escapeHtml(sectionNames)}${moreCount ? ' 외 ' + moreCount + '개' : ''}
+          </div>
+          <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap;">
+            <button class="log-action-btn" style="background:var(--blue-3);color:var(--blue);border:none;" onclick="previewTemplate(${t.id})">👁 미리보기</button>
+            <button class="log-action-btn" style="background:var(--teal);color:var(--white);border:none;font-weight:700;" onclick="useTemplateForLesson(${t.id}, '${tplName.replace(/'/g, "\\'")}')">✨ 이 양식으로 지도안 만들기 →</button>
+          </div>
+        </div>
+        <div class="log-right">
+          <div class="log-date">${date}</div>
+          <div class="log-actions">
+            <button class="log-action-btn" style="background:var(--coral-3);color:var(--coral);border:none;" onclick="deleteTemplate(${t.id})">🗑 삭제</button>
+          </div>
+        </div>
+      </li>
+    `;
+  }).join('');
+}
+
+async function uploadTemplate() {
+  const token = localStorage.getItem('auth_token');
+  if (!token) { showModal(); return; }
+
+  const nameEl = document.getElementById('tplName');
+  const fileEl = document.getElementById('tplFile');
+  const resultEl = document.getElementById('tplUploadResult');
+
+  const name = nameEl.value.trim();
+  const file = fileEl.files[0];
+
+  if (!name) { showToast('양식 이름을 입력해주세요.', 'error'); return; }
+  if (!file) { showToast('파일을 선택해주세요.', 'error'); return; }
+  if (!file.name.toLowerCase().match(/\.(docx|hwp)$/)) { showToast('.docx 또는 .hwp 파일만 가능합니다.', 'error'); return; }
+
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('template_name', name);
+
+  resultEl.style.display = 'block';
+  resultEl.style.color = 'var(--g5)';
+  resultEl.textContent = '업로드 중...';
+
+  try {
+    const r = await fetch(API_BASE + '/api/templates/upload', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token },
+      body: formData,
+    });
+    const data = await r.json();
+    if (r.ok) {
+      resultEl.style.color = 'var(--teal)';
+      let msg = '✅ 업로드 완료! 감지된 섹션: <b>' + data.total_sections + '개</b>';
+      if (data.warning) msg += '<br><span style="color:var(--amber);font-size:11px;">' + data.warning + '</span>';
+      resultEl.innerHTML = msg;
+      nameEl.value = ''; fileEl.value = '';
+      showToast('양식이 등록되었습니다!', 'success');
+      loadTemplates();
+    } else {
+      resultEl.style.color = 'var(--coral)';
+      resultEl.textContent = '❌ 실패: ' + (data.detail || '알 수 없는 오류');
+    }
+  } catch (e) {
+    resultEl.style.color = 'var(--coral)';
+    resultEl.textContent = '❌ 오류: ' + e.message;
+  }
+}
+
+async function deleteTemplate(id) {
+  if (!confirm('이 양식을 삭제하시겠습니까?')) return;
+  const token = localStorage.getItem('auth_token');
+  if (!token) return;
+  try {
+    const r = await fetch(API_BASE + '/api/templates/' + id, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (r.ok) {
+      showToast('삭제되었습니다.', 'info');
+      loadTemplates();
+    }
+  } catch (e) {
+    showToast('삭제 실패', 'error');
+  }
+}
+
+function updateExportTplSelect() {
+  const sel = document.getElementById('exportTplSelect');
+  if (!sel) return;
+  const opts = ['<option value="">기본 양식</option>'];
+  for (const t of _userTemplates) {
+    opts.push('<option value="' + t.id + '">' + escapeHtml(t.template_name) + '</option>');
+  }
+  sel.innerHTML = opts.join('');
+}
+
+async function downloadAsDocx() {
+  const content = document.getElementById('outputContent');
+  const md = content.dataset.markdown;
+  if (!md) { showToast('지도안이 없습니다.', 'error'); return; }
+
+  const tplSelect = document.getElementById('exportTplSelect');
+  const templateId = tplSelect && tplSelect.value ? parseInt(tplSelect.value) : null;
+
+  const card = _state.cards && _state.cards[_state.selectedCardIdx];
+  const title = card ? card.card_title : '지도안';
+
+  showToast('docx 생성 중...', 'info');
+
+  let sectionsData = null;
+  if (templateId) {
+    // 양식이 있으면 섹션별로 분해
+    try {
+      const r = await fetch(API_BASE + '/api/lesson/parse-sections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ markdown: md }),
+      });
+      sectionsData = await r.json();
+    } catch (e) {
+      console.error('섹션 파싱 실패:', e);
+    }
+  }
+
+  try {
+    const r = await fetch(API_BASE + '/api/lesson/export-docx', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        markdown: md,
+        title: title,
+        template_id: templateId,
+        sections_data: sectionsData,
+      }),
+    });
+    if (!r.ok) throw new Error('생성 실패');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = title + '.docx';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('.docx 다운로드 완료!', 'success');
+  } catch (e) {
+    showToast('다운로드 실패: ' + e.message, 'error');
+  }
+}
+
+// showPage 후크에 templates 페이지 자동 로드 추가
+const _origShowPageT = showPage;
+showPage = function(id, navEl, section) {
+  _origShowPageT(id, navEl, section);
+  if (id === 'templates') loadTemplates();
+  // scanner 페이지 들어가면 양식 목록 미리 로드 (드롭다운용)
+  if (id === 'scanner' && localStorage.getItem('auth_token') && _userTemplates.length === 0) {
+    loadTemplates();
+  }
+};
+
+
+// ============================================================
+// 양식 미리보기 + 양식 적용 기능
+// ============================================================
+
+let _pendingTemplateId = null;  // Scanner로 이동 후 자동 선택할 양식 ID
+
+async function previewTemplate(templateId) {
+  const token = localStorage.getItem('auth_token');
+  if (!token) { showModal(); return; }
+
+  const modal = document.getElementById('tplPreviewModal');
+  const titleEl = document.getElementById('tplPreviewTitle');
+  const filenameEl = document.getElementById('tplPreviewFilename');
+  const contentEl = document.getElementById('tplPreviewContent');
+  const useBtn = document.getElementById('tplPreviewUseBtn');
+
+  contentEl.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--g5);">미리보기 로딩 중...</div>';
+  modal.style.display = 'block';
+
+  try {
+    const r = await fetch(API_BASE + '/api/templates/' + templateId + '/preview', {
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (!r.ok) {
+      const err = await r.json();
+      throw new Error(err.detail || '미리보기 실패');
+    }
+    const data = await r.json();
+    titleEl.textContent = '📄 ' + data.template_name;
+    filenameEl.textContent = data.filename;
+    contentEl.innerHTML = data.content;
+
+    // "이 양식으로 만들기" 버튼 동작 설정
+    useBtn.onclick = () => {
+      closeTplPreview();
+      useTemplateForLesson(templateId, data.template_name);
+    };
+  } catch (e) {
+    contentEl.innerHTML = '<div style="text-align:center;padding:3rem;color:var(--coral);">❌ ' + e.message + '</div>';
+  }
+}
+
+function closeTplPreview() {
+  document.getElementById('tplPreviewModal').style.display = 'none';
+}
+
+function useTemplateForLesson(templateId, templateName) {
+  _pendingTemplateId = templateId;
+  showToast('"' + templateName + '" 양식이 선택되었습니다. Play-Scanner에서 검색해주세요.', 'success');
+  // Scanner 페이지로 이동
+  const scannerNav = document.querySelector('.nav-item[onclick*="scanner"]');
+  showPage('scanner', scannerNav);
+}
+
+// Scanner 진입 시 보류 중인 양식이 있으면 드롭다운 자동 선택
+const _origShowPagePV = showPage;
+showPage = function(id, navEl, section) {
+  _origShowPagePV(id, navEl, section);
+  if (id === 'scanner' && _pendingTemplateId) {
+    // 양식 목록이 로드된 다음 선택
+    const trySelect = () => {
+      const sel = document.getElementById('exportTplSelect');
+      if (sel && sel.options.length > 1) {
+        sel.value = String(_pendingTemplateId);
+        // 시각적으로 강조 표시
+        sel.style.border = '2px solid var(--teal)';
+        sel.style.boxShadow = '0 0 0 3px rgba(29,158,117,0.2)';
+        setTimeout(() => {
+          sel.style.border = '';
+          sel.style.boxShadow = '';
+        }, 3000);
+        _pendingTemplateId = null;
+      } else {
+        // 아직 목록 로드 안 됐으면 잠시 후 재시도
+        setTimeout(trySelect, 300);
+      }
+    };
+    // 양식 목록 로드 트리거
+    if (typeof loadTemplates === 'function' && localStorage.getItem('auth_token')) {
+      loadTemplates();
+    }
+    setTimeout(trySelect, 500);
+  }
+};
+
+
+
+// ============================================================
+// 개인정보 입력 모달 로직
+// ============================================================
+
+let _pendingDocxContext = null;  // {markdown, title, templateId, source, age, duration, search_query}
+
+async function checkAndShowPersonalInfo(context) {
+  // context = {markdown, title, templateId, age?, duration?, search_query?}
+  const token = localStorage.getItem('auth_token');
+  
+  // 양식이 없으면 바로 다운로드
+  if (!context.templateId) {
+    return await actualDownloadDocx(context, {});
+  }
+  
+  // 양식이 있으면 개인정보 필드 조회
+  try {
+    const r = await fetch(API_BASE + '/api/templates/' + context.templateId + '/personal-fields', {
+      headers: { 'Authorization': 'Bearer ' + token },
+    });
+    if (!r.ok) {
+      // 조회 실패해도 다운로드는 진행
+      return await actualDownloadDocx(context, {});
+    }
+    const data = await r.json();
+    if (!data.fields || data.fields.length === 0) {
+      // 개인 정보 필드가 없으면 바로 다운로드
+      return await actualDownloadDocx(context, {});
+    }
+    // 개인 정보 필드가 있으면 모달 표시
+    _pendingDocxContext = context;
+    renderPersonalInfoFields(data.fields);
+    document.getElementById('personalInfoModal').style.display = 'block';
+  } catch (e) {
+    console.error('개인정보 필드 조회 실패:', e);
+    return await actualDownloadDocx(context, {});
+  }
+}
+
+function renderPersonalInfoFields(fields) {
+  const container = document.getElementById('personalInfoFields');
+  
+  // 카테고리별로 그룹화
+  const grouped = {};
+  for (const f of fields) {
+    if (!grouped[f.category]) grouped[f.category] = [];
+    grouped[f.category].push(f);
+  }
+  
+  let html = '';
+  const categoryIcons = {
+    "교사 이름": "👨‍🏫",
+    "학생/실습생 이름": "🎓",
+    "학과/소속": "🏛",
+    "학교/유치원명": "🏫",
+    "수업 일시": "📅",
+    "대상 학급": "👶",
+    "장소": "📍",
+    "결재란": "📋",
+  };
+  
+  for (const [category, list] of Object.entries(grouped)) {
+    const icon = categoryIcons[category] || "📝";
+    html += '<div style="margin-bottom:18px;">';
+    html += '<div style="font-size:12px; font-weight:700; color:var(--g7); margin-bottom:8px;">' + icon + ' ' + category + '</div>';
+    for (const f of list) {
+      const inputType = f.field_type === 'date' ? 'text' : f.field_type;
+      html += `
+        <div style="margin-bottom:10px;">
+          <label style="display:block; font-size:11px; color:var(--g6); margin-bottom:4px;">${escapeHtml(f.label)}</label>
+          <input type="${inputType}" 
+                 data-label="${escapeHtml(f.label)}"
+                 class="personal-info-input"
+                 placeholder="${escapeHtml(f.placeholder || '')}" 
+                 style="width:100%; height:38px; padding:0 12px; border:1.5px solid var(--g2); border-radius:var(--r); font-family:var(--font); font-size:13px; background:var(--white); color:var(--g9); outline:none;">
+        </div>
+      `;
+    }
+    html += '</div>';
+  }
+  
+  container.innerHTML = html;
+}
+
+function closePersonalInfoModal() {
+  document.getElementById('personalInfoModal').style.display = 'none';
+  _pendingDocxContext = null;
+}
+
+async function submitPersonalInfoAndDownload() {
+  if (!_pendingDocxContext) return;
+  
+  // 입력값 수집
+  const personalInfo = {};
+  document.querySelectorAll('.personal-info-input').forEach(inp => {
+    const label = inp.dataset.label;
+    const val = inp.value.trim();
+    if (label && val) personalInfo[label] = val;
+  });
+  
+  const ctx = _pendingDocxContext;
+  closePersonalInfoModal();
+  
+  await actualDownloadDocx(ctx, personalInfo);
+}
+
+async function actualDownloadDocx(context, personalInfo) {
+  showToast(context.templateId ? '양식 적용해서 docx 생성 중... (약 5초)' : '.docx 생성 중...', 'info');
+  
+  try {
+    const body = {
+      markdown: context.markdown,
+      title: context.title,
+      template_id: context.templateId,
+      personal_info: personalInfo,
+    };
+    if (context.age) body.age = context.age;
+    if (context.duration) body.duration = context.duration;
+    if (context.search_query) body.search_query = context.search_query;
+    
+    const r = await fetch(API_BASE + '/api/lesson/export-docx', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!r.ok) throw new Error('생성 실패');
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = (context.title || '지도안') + '.docx';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('.docx 다운로드 완료!', 'success');
+  } catch (e) {
+    showToast('다운로드 실패: ' + e.message, 'error');
+  }
+}
+
+// ============================================================
+// 기존 다운로드 함수를 인터셉트해서 personal info 체크
+// ============================================================
+const _origDownloadAsDocx = downloadAsDocx;
+downloadAsDocx = async function() {
+  const content = document.getElementById('outputContent');
+  const md = content.dataset.markdown;
+  if (!md) { showToast('지도안이 없습니다.', 'error'); return; }
+  const tplSelect = document.getElementById('exportTplSelect');
+  const templateId = tplSelect && tplSelect.value ? parseInt(tplSelect.value) : null;
+  const card = _state.cards && _state.cards[_state.selectedCardIdx];
+  const title = card ? card.card_title : '지도안';
+  
+  await checkAndShowPersonalInfo({
+    markdown: md,
+    title: title,
+    templateId: templateId,
+    age: _state.age,
+    duration: _state.duration,
+    search_query: _state.searchQuery,
+  });
+};
+
+const _origDownloadSavedAsDocx = downloadSavedAsDocx;
+downloadSavedAsDocx = async function() {
+  if (!_currentSavedLesson) { showToast('지도안이 없습니다.', 'error'); return; }
+  const tplSelect = document.getElementById('savedLessonTplSelect');
+  const templateId = tplSelect && tplSelect.value ? parseInt(tplSelect.value) : null;
+  
+  await checkAndShowPersonalInfo({
+    markdown: _currentSavedLesson.lesson_markdown,
+    title: _currentSavedLesson.title || '지도안',
+    templateId: templateId,
+    age: _currentSavedLesson.age,
+    duration: _currentSavedLesson.duration,
+    search_query: _currentSavedLesson.search_query,
+  });
+};
+
+</script>
+
+
+<!-- 개인정보 입력 모달 -->
+<div id="personalInfoModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9999; backdrop-filter:blur(4px);" onclick="if(event.target===this) closePersonalInfoModal();">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; max-width:520px; max-height:85vh; background:var(--white); border-radius:var(--r-lg); box-shadow:0 20px 60px rgba(0,0,0,0.3); display:flex; flex-direction:column;">
+    <div style="padding:20px 24px; border-bottom:1px solid var(--g2);">
+      <div style="font-size:17px; font-weight:700; color:var(--g9);">📝 양식 정보 입력</div>
+      <div style="font-size:12px; color:var(--g5); margin-top:4px;">AI가 작성할 수 없는 개인 정보를 입력해주세요. 비워두면 빈 칸으로 출력됩니다.</div>
+    </div>
+    <div id="personalInfoFields" style="flex:1; overflow-y:auto; padding:20px 24px;"></div>
+    <div style="padding:16px 24px; border-top:1px solid var(--g2); display:flex; gap:10px; justify-content:flex-end;">
+      <button onclick="closePersonalInfoModal()" style="padding:9px 16px; border:1px solid var(--g2); border-radius:var(--r); background:var(--white); font-family:var(--font); font-size:13px; cursor:pointer;">취소</button>
+      <button onclick="submitPersonalInfoAndDownload()" style="padding:9px 18px; border:none; border-radius:var(--r); background:var(--teal); color:var(--white); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer;">📄 .docx 생성하기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 양식 미리보기 모달 -->
+<div id="tplPreviewModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:9998; backdrop-filter:blur(4px);" onclick="if(event.target===this) closeTplPreview();">
+  <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:90%; max-width:900px; max-height:90vh; background:var(--white); border-radius:var(--r-lg); box-shadow:0 20px 60px rgba(0,0,0,0.3); display:flex; flex-direction:column;">
+    <div style="display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid var(--g2);">
+      <div>
+        <div id="tplPreviewTitle" style="font-size:17px; font-weight:700; color:var(--g9);"></div>
+        <div id="tplPreviewFilename" style="font-size:12px; color:var(--g5); margin-top:2px;"></div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button id="tplPreviewUseBtn" style="padding:8px 14px; background:var(--teal); color:var(--white); border:none; border-radius:var(--r); font-family:var(--font); font-size:13px; font-weight:700; cursor:pointer;">✨ 이 양식으로 지도안 만들기 →</button>
+        <button onclick="closeTplPreview()" style="width:36px; height:36px; border:none; background:var(--g1); border-radius:50%; cursor:pointer; font-size:18px; color:var(--g7);">×</button>
+      </div>
+    </div>
+    <div id="tplPreviewContent" style="flex:1; overflow-y:auto; padding:24px; background:var(--g0); color:var(--g9); font-size:13px; line-height:1.6;"></div>
+  </div>
+</div>
+
+<style>
+#tplPreviewContent table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1em 0;
+  background: var(--white);
+}
+#tplPreviewContent table td, #tplPreviewContent table th {
+  border: 1px solid var(--g3);
+  padding: 8px 12px;
+  vertical-align: top;
+}
+#tplPreviewContent table th {
+  background: var(--g1);
+  font-weight: 700;
+}
+#tplPreviewContent h1, #tplPreviewContent h2, #tplPreviewContent h3 {
+  margin: 1em 0 0.5em;
+  font-weight: 700;
+}
+#tplPreviewContent p { margin: 0.5em 0; }
+#tplPreviewContent ul, #tplPreviewContent ol { margin: 0.5em 0; padding-left: 1.5em; }
+</style>
+
+</body>
+</html>

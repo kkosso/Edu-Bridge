@@ -1,0 +1,193 @@
+"""
+services/docx_writer.py
+========================
+지도안 마크다운을 .docx로 변환
+(사용자 양식이 있으면 그 양식에 채우고, 없으면 기본 양식 사용)
+"""
+from docx import Document
+from docx.shared import Pt, RGBColor, Cm
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from typing import Optional, Dict
+import re
+
+
+def markdown_to_docx(
+    markdown: str,
+    output_path: str,
+    title: str = "지도안",
+    template_path: Optional[str] = None,
+    sections_data: Optional[Dict[str, str]] = None,
+):
+    """
+    Markdown을 .docx로 저장.
+
+    template_path가 있으면 그 양식의 표/단락에 sections_data를 채워서 저장.
+    없으면 새 문서를 만들어서 마크다운을 단순 변환.
+    """
+    if template_path and sections_data:
+        _fill_template(template_path, output_path, sections_data)
+    else:
+        _create_simple_docx(markdown, output_path, title)
+
+
+def _create_simple_docx(markdown: str, output_path: str, title: str):
+    """기본 양식: 마크다운 → 단순 docx"""
+    doc = Document()
+
+    # 제목
+    title_para = doc.add_paragraph()
+    title_run = title_para.add_run(title)
+    title_run.bold = True
+    title_run.font.size = Pt(18)
+    title_para.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+    doc.add_paragraph()
+
+    # 마크다운 줄 단위 처리
+    for line in markdown.split("\n"):
+        line = line.rstrip()
+        if not line:
+            doc.add_paragraph()
+            continue
+
+        # 헤더 처리
+        if line.startswith("# "):
+            p = doc.add_paragraph()
+            r = p.add_run(line[2:])
+            r.bold = True
+            r.font.size = Pt(16)
+        elif line.startswith("## "):
+            p = doc.add_paragraph()
+            r = p.add_run(line[3:])
+            r.bold = True
+            r.font.size = Pt(14)
+        elif line.startswith("### "):
+            p = doc.add_paragraph()
+            r = p.add_run(line[4:])
+            r.bold = True
+            r.font.size = Pt(12)
+        # 리스트
+        elif line.lstrip().startswith(("- ", "* ", "• ")):
+            doc.add_paragraph(line.lstrip()[2:], style="List Bullet")
+        # 번호 리스트
+        elif re.match(r"^\d+\.\s", line):
+            text = re.sub(r"^\d+\.\s", "", line)
+            doc.add_paragraph(text, style="List Number")
+        # 굵은 글씨 처리 (**text**)
+        else:
+            p = doc.add_paragraph()
+            _add_formatted_text(p, line)
+
+    doc.save(output_path)
+
+
+def _add_formatted_text(paragraph, text: str):
+    """**bold** 마크다운을 docx 굵은 글씨로"""
+    parts = re.split(r"(\*\*[^*]+\*\*)", text)
+    for part in parts:
+        if part.startswith("**") and part.endswith("**"):
+            run = paragraph.add_run(part[2:-2])
+            run.bold = True
+        elif part:
+            paragraph.add_run(part)
+
+
+def _fill_template(template_path: str, output_path: str, sections_data: Dict[str, str]):
+    """
+    사용자 양식 docx를 열어서 각 섹션에 값을 채워 넣기.
+
+    셀 채우기 전략 (우선순위):
+    1. 같은 행의 다음 셀 (가장 일반적)
+    2. 바로 아래 행의 같은 위치 셀
+    3. 같은 셀 내부의 빈 공간
+    """
+    doc = Document(template_path)
+    filled_cells = set()  # 이미 채운 셀 추적
+
+    # 1) 표 기반 채우기
+    for table in doc.tables:
+        rows = list(table.rows)
+        for row_idx, row in enumerate(rows):
+            cells = row.cells
+            for col_idx, cell in enumerate(cells):
+                cell_id = (id(table), row_idx, col_idx)
+                if cell_id in filled_cells:
+                    continue
+                
+                cell_text = cell.text.strip().rstrip(":：").strip()
+                if not cell_text:
+                    continue
+                
+                value = _find_matching_value(cell_text, sections_data)
+                if not value:
+                    continue
+                
+                # 전략 1: 같은 행의 다음 셀
+                if col_idx + 1 < len(cells):
+                    next_cell = cells[col_idx + 1]
+                    next_id = (id(table), row_idx, col_idx + 1)
+                    if next_id not in filled_cells and (
+                        not next_cell.text.strip() or _is_filler(next_cell.text)
+                    ):
+                        _replace_cell_text(next_cell, value)
+                        filled_cells.add(next_id)
+                        continue
+                
+                # 전략 2: 바로 아래 행의 같은 위치 셀
+                if row_idx + 1 < len(rows):
+                    below_cell = rows[row_idx + 1].cells[col_idx] if col_idx < len(rows[row_idx + 1].cells) else None
+                    below_id = (id(table), row_idx + 1, col_idx)
+                    if below_cell and below_id not in filled_cells and (
+                        not below_cell.text.strip() or _is_filler(below_cell.text)
+                    ):
+                        _replace_cell_text(below_cell, value)
+                        filled_cells.add(below_id)
+                        continue
+
+    # 2) 단락 기반 채우기
+    paragraphs = doc.paragraphs
+    for i, para in enumerate(paragraphs):
+        text = para.text.strip().rstrip(":：").strip()
+        if not text:
+            continue
+        value = _find_matching_value(text, sections_data)
+        if value and i + 1 < len(paragraphs):
+            next_para = paragraphs[i + 1]
+            if not next_para.text.strip() or _is_filler(next_para.text):
+                next_para.add_run(value)
+
+    doc.save(output_path)
+
+
+def _replace_cell_text(cell, value: str):
+    """셀의 기존 텍스트를 모두 제거하고 새 값 삽입"""
+    # 첫 단락만 남기고 나머지 단락 제거
+    for para in cell.paragraphs[1:]:
+        p_element = para._element
+        p_element.getparent().remove(p_element)
+    # 첫 단락의 모든 run 제거
+    first_para = cell.paragraphs[0]
+    for run in first_para.runs:
+        run.text = ""
+    # 새 텍스트 삽입 (줄바꿈 처리)
+    lines = value.split("\n")
+    if lines:
+        first_para.add_run(lines[0])
+        for extra_line in lines[1:]:
+            new_para = cell.add_paragraph()
+            new_para.add_run(extra_line)
+
+
+def _find_matching_value(section_name: str, sections_data: Dict[str, str]) -> Optional[str]:
+    """섹션 이름과 매칭되는 값 찾기 (부분 매칭 허용)"""
+    if not section_name:
+        return None
+    for key, value in sections_data.items():
+        if key in section_name or section_name in key:
+            return value
+    return None
+
+
+def _is_filler(text: str) -> bool:
+    text = text.strip()
+    return text in ["", "...", "___", "OOO", "○○○"] or text.startswith("예)")
